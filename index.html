@@ -4126,7 +4126,7 @@ input, select { font-family: inherit; }
         <div class="prog-fill" id="prog-fill"></div>
       </div>
       <div class="prog-count"><span id="visited-count">0</span> <span style="font-size:var(--t-sm);color:var(--c-text-dim)">/ 27</span></div>
-      <div class="prog-hint" id="prog-hint">Visite pelo menos <span id="needed-count">12</span> países para gerar o passaporte</div>
+      <div class="prog-hint" id="prog-hint">Visite pelo menos <span id="needed-count">4</span> países para gerar o passaporte</div>
     </div>
 
     <!-- Passport button -->
@@ -4422,6 +4422,7 @@ let touchOpenTimer = null;
 let lastTouchInteractionAt = 0;
 let mapResizeHandler = null;
 const featureMotionState = new Map();
+const REQUIRED_STAMPS = 4;
 
 // ══════════════════════════════════════════════════════
 // UTILS
@@ -5139,12 +5140,12 @@ function updateProgress() {
       easing: 'easeOutQuad'
     });
   }
-  const needed = Math.max(0, 12-c);
+  const needed = Math.max(0, REQUIRED_STAMPS-c);
   const passBtn = document.getElementById('passport-btn');
   const hint    = document.getElementById('prog-hint');
   const neededEl= document.getElementById('needed-count');
   const wasVisible = passBtn.classList.contains('visible');
-  if (c>=12) {
+  if (c>=REQUIRED_STAMPS) {
     passBtn.classList.add('visible');
     hint.style.display='none';
     if (!wasVisible) {
