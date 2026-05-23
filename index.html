@@ -165,7 +165,7 @@ input, select { font-family: inherit; }
   .cc-body { padding: var(--s-5); }
   .pp-book { flex-direction: column; }
   .pp-cover, .pp-interior { width: 100%; }
-  .pp-stamps-spread { grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); }
+  .pp-stamps-spread { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pp-modal-btns { flex-direction: column; align-items: stretch; }
   .pp-modal-btns button { width: 100%; }
   .reg-card { width: min(92vw, 440px); }
@@ -182,7 +182,7 @@ input, select { font-family: inherit; }
   .progress-wrap { bottom: 5rem; left: 50%; transform: translateX(-50%); width: min(96vw, 100%); }
   .cc-header { height: 180px; }
   .cc-body { padding: var(--s-4); }
-  .pp-stamps-spread { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+  .pp-stamps-spread { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .intro-btn { width: min(88vw, 260px); }
 }
 
@@ -842,7 +842,7 @@ input, select { font-family: inherit; }
 
 .pp-stamps-spread {
   display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(76px, 1fr));
+  grid-template-columns:repeat(4, minmax(0, 1fr));
   gap:0.55rem;
   padding:0.6rem;
   position:relative;
@@ -1418,7 +1418,7 @@ input, select { font-family: inherit; }
 }
 .pp-stamps-spread {
   min-height: 0;
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.55rem 0.7rem;
   padding: clamp(0.75rem, 2.1vw, 1.2rem);
   align-content: start;
@@ -1520,7 +1520,7 @@ input, select { font-family: inherit; }
   .pp-cover { min-height: 250px; }
   .pp-holder { flex-direction: column; }
   .pp-fields { grid-template-columns: 1fr; }
-  .pp-stamps-spread { grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 0.55rem; }
+  .pp-stamps-spread { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; }
 }
 
 @media (max-width: 900px) {
