@@ -1,0 +1,213 @@
+/* ═══════════════════════════════════════════════════════════
+   EUROPA EXPLORER — ADMIN CMS STYLES
+   Injected on top of existing styles. Public design unchanged.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Login Button (works in both intro-nav and globe header) ── */
+#auth-login-btn {
+    cursor: pointer;
+    background: transparent;
+    color: #d9b45f;
+    border: 1px solid rgba(217,180,95,0.55);
+    padding: 5px 16px;
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    transition: all 200ms ease;
+    margin-left: 12px;
+    white-space: nowrap;
+}
+#auth-login-btn:hover {
+    background: rgba(217,180,95,0.12);
+    border-color: #d9b45f;
+}
+#auth-login-btn.logged-in {
+    background: rgba(79,185,139,0.15);
+    border-color: #4fb98b;
+    color: #4fb98b;
+}
+
+/* ── Login Modal ── */
+#admin-login-modal {
+    position: fixed; inset: 0; z-index: 9998;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.82); backdrop-filter: blur(12px);
+}
+#admin-login-modal.active { display: flex; animation: fadein 220ms ease; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+.admin-card {
+    width: min(400px, 92vw);
+    background: linear-gradient(145deg, rgba(5,8,22,0.98) 0%, rgba(8,14,34,0.96) 100%);
+    border: 1px solid rgba(217,180,95,0.45);
+    border-radius: 8px;
+    padding: 40px 36px 32px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 260ms cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes slideUp { from { opacity:0; transform:translateY(24px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+.admin-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(217,180,95,0.6), transparent);
+}
+.admin-card-logo {
+    text-align: center; margin-bottom: 12px; opacity: 0.8;
+}
+.admin-card h2 {
+    font-family: 'Cinzel', serif;
+    color: #d9b45f;
+    font-size: 0.85rem;
+    letter-spacing: 0.28em;
+    text-align: center;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+}
+.admin-card input {
+    display: block; width: 100%; margin-bottom: 14px; padding: 11px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #eef2ef; border-radius: 4px;
+    font-size: 0.9rem; outline: none;
+    transition: border-color 150ms;
+}
+.admin-card input:focus { border-color: rgba(217,180,95,0.45); background: rgba(255,255,255,0.08); }
+.admin-card input::placeholder { color: rgba(255,255,255,0.28); }
+
+#admin-submit-login {
+    display: block; width: 100%; padding: 11px;
+    background: linear-gradient(135deg, #d9b45f 0%, #f1d88b 100%);
+    color: #050607; border: none; border-radius: 4px;
+    font-family: 'Cinzel', serif; font-size: 0.72rem;
+    letter-spacing: 0.22em; font-weight: 700; text-transform: uppercase;
+    cursor: pointer; margin-bottom: 10px;
+    transition: all 180ms; box-shadow: 0 6px 20px rgba(217,180,95,0.25);
+}
+#admin-submit-login:hover { box-shadow: 0 10px 32px rgba(217,180,95,0.4); transform: translateY(-1px); }
+
+.admin-card button.cancel {
+    display: block; width: 100%; padding: 9px;
+    background: transparent; border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4); border-radius: 4px;
+    font-size: 0.78rem; cursor: pointer; transition: all 150ms;
+}
+.admin-card button.cancel:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+
+#admin-login-error {
+    display: none; margin-top: 12px; padding: 8px 12px;
+    background: rgba(192,57,43,0.2); border: 1px solid rgba(192,57,43,0.4);
+    color: #e74c3c; border-radius: 4px; font-size: 0.78rem; text-align: center;
+}
+
+/* ── Notification Banner ── */
+.admin-notification {
+    position: fixed; top: 20px; right: 20px;
+    background: linear-gradient(135deg, rgba(10,5,5,0.96) 0%, rgba(25,5,5,0.96) 100%);
+    border: 1px solid rgba(192,57,43,0.55);
+    color: white; padding: 16px 20px;
+    border-radius: 8px; z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    font-family: 'Inter', sans-serif;
+    display: none; gap: 14px; align-items: flex-start;
+    max-width: 360px; font-size: 0.85rem;
+}
+.admin-notification.active { display: flex; animation: slideIn 0.4s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideIn { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.admin-notif-icon {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(192,57,43,0.3); border: 1px solid rgba(192,57,43,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #e74c3c;
+}
+.admin-notif-close {
+    margin-top: 10px; background: rgba(255,255,255,0.1); color: white;
+    border: 1px solid rgba(255,255,255,0.15); padding: 5px 12px;
+    border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 150ms;
+}
+.admin-notif-close:hover { background: rgba(255,255,255,0.18); }
+
+/* ── Inline Edit Mode ── */
+.admin-edit-mode [contenteditable="true"] {
+    border: 1px dashed rgba(217,180,95,0.5);
+    border-radius: 3px; padding: 4px 6px;
+    background: rgba(217,180,95,0.04); outline: none;
+    transition: all 150ms;
+}
+.admin-edit-mode [contenteditable="true"]:focus {
+    background: rgba(217,180,95,0.1);
+    border-color: rgba(217,180,95,0.7);
+}
+
+/* ── Image Toolbar ── */
+.admin-toolbar {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+    background: rgba(5,8,22,0.95); border: 1px solid rgba(217,180,95,0.4);
+    padding: 10px 20px; border-radius: 8px; z-index: 5000;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    gap: 12px; align-items: center;
+    backdrop-filter: blur(12px);
+}
+.btn-toolbar {
+    background: linear-gradient(135deg, #4fb98b 0%, #3da375 100%);
+    color: white; padding: 7px 18px;
+    border-radius: 4px; font-family: 'Cinzel', serif;
+    letter-spacing: 0.12em; font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; transition: all 150ms;
+    box-shadow: 0 4px 12px rgba(79,185,139,0.3);
+}
+.btn-toolbar:hover { box-shadow: 0 6px 20px rgba(79,185,139,0.45); transform: translateY(-1px); }
+
+/* ── Canva-style Images ── */
+.canvas-image {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); border-radius: 4px; overflow: visible;
+}
+.canvas-image.draggable {
+    cursor: move;
+    outline: 2px dashed rgba(79,185,139,0.7);
+    outline-offset: 2px;
+}
+.canvas-image .resize-handle {
+    position: absolute; bottom: -5px; right: -5px;
+    width: 14px; height: 14px;
+    background: #4fb98b; cursor: se-resize;
+    border-radius: 50%; border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    display: none;
+}
+.canvas-image.draggable .resize-handle { display: block; }
+
+/* ── Super Admin Dashboard Notice ── */
+#super-admin-notice {
+    position: fixed; inset: 0; z-index: 9998;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.82); backdrop-filter: blur(12px);
+}
+.sa-notice-card {
+    background: linear-gradient(145deg, rgba(5,8,22,0.98) 0%, rgba(8,14,34,0.96) 100%);
+    border: 1px solid rgba(217,180,95,0.45); border-radius: 8px;
+    padding: 40px; max-width: 480px; text-align: center;
+}
+.sa-notice-logo { font-size: 2.5rem; margin-bottom: 16px; }
+.sa-notice-card h3 {
+    font-family: 'Cinzel', serif; color: #d9b45f;
+    margin-bottom: 16px; letter-spacing: 0.12em;
+}
+.sa-notice-card p { color: rgba(255,255,255,0.65); margin-bottom: 12px; font-size: 0.9rem; }
+.sa-notice-card code {
+    display: block; background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 4px;
+    padding: 12px 16px; font-size: 0.82rem; color: #4fb98b;
+    margin: 12px 0; letter-spacing: 0.04em;
+}
+.sa-notice-card button {
+    margin-top: 20px; padding: 10px 28px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: white; border-radius: 4px; cursor: pointer;
+    font-size: 0.82rem; transition: all 150ms;
+}
+.sa-notice-card button:hover { background: rgba(255,255,255,0.15); }
