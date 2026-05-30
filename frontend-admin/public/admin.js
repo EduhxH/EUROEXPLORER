@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openSuperAdminDashboard() {
-        window.location.assign('admin-dashboard.html');
+        window.location.assign('admin-panel/');
     }
 
     let currentImages = [];
