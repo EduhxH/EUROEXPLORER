@@ -51,11 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <strong>Europa Explorer</strong>
                         <span>Centro de administração</span>
                     </div>
-                    <div class="admin-login-dots" aria-hidden="true">
-                        <span></span>
-                        <span></span>
-                        <span class="active"></span>
-                    </div>
                 </aside>
 
                 <section class="admin-login-panel">

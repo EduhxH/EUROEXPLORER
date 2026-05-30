@@ -144,8 +144,7 @@
 
 .admin-login-back,
 .admin-login-mark,
-.admin-login-caption,
-.admin-login-dots {
+.admin-login-caption {
     position: absolute;
     z-index: 3;
 }
@@ -198,25 +197,6 @@
 .admin-login-caption span {
     color: rgba(255, 255, 255, 0.76);
     font-size: 1rem;
-}
-
-.admin-login-dots {
-    bottom: 44px;
-    left: 50%;
-    display: flex;
-    gap: 12px;
-    transform: translateX(-50%);
-}
-
-.admin-login-dots span {
-    width: 36px;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.32);
-}
-
-.admin-login-dots .active {
-    background: #fff;
 }
 
 .admin-login-panel {
@@ -888,9 +868,6 @@
         bottom: 42px;
     }
 
-    .admin-login-dots {
-        display: none;
-    }
 }
 
 @media (max-width: 560px) {
