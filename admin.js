@@ -226,14 +226,28 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(btn);
     }
 
+    function hasAdminAccess(user) {
+        return user?.role === 'STANDARD_ADMIN' || user?.role === 'SUPER_ADMIN';
+    }
+
+    function syncGlobeAdminButton(user = getStoredAdminUser()) {
+        const meta = document.querySelector('.hdr-meta');
+        if (!meta) return;
+
+        if (hasAdminAccess(user)) {
+            injectLoginButton(meta);
+            return;
+        }
+
+        meta.querySelector('.auth-login-btn')?.remove();
+    }
+
     injectLoginButton(document.querySelector('.intro-nav-meta'));
-    injectLoginButton(document.querySelector('.hdr-meta'));
 
     const globeScreen = document.getElementById('globe-screen');
     if (globeScreen) {
         const globeObserver = new MutationObserver(() => {
             if (globeScreen.classList.contains('active')) {
-                injectLoginButton(document.querySelector('.hdr-meta'));
                 updateLoginButtonState();
             }
         });
@@ -353,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateLoginButtonState() {
         const user = getStoredAdminUser();
+        syncGlobeAdminButton(user);
 
         document.querySelectorAll('.auth-login-btn').forEach((btn) => {
             if (user) {
