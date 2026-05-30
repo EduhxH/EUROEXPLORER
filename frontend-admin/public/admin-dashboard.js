@@ -1,4 +1,25 @@
-const API_BASE = 'http://localhost:8000';
+const API_BASE = (
+    window.EUROEXPLORER_API_BASE
+    || document.querySelector('meta[name="europa-api-base"]')?.content
+    || (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000' : '')
+).replace(/\/+$/, '');
+
+function apiUrl(path) {
+    if (!API_BASE) {
+        throw new Error('API_NOT_CONFIGURED');
+    }
+    return `${API_BASE}${path}`;
+}
+
+async function apiFetch(path, options = {}, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(apiUrl(path), { ...options, signal: controller.signal });
+    } finally {
+        window.clearTimeout(timeout);
+    }
+}
 
 const state = {
     user: getStoredUser(),
@@ -87,7 +108,7 @@ function getStoredUser() {
 
 async function hydrateSession() {
     try {
-        const response = await fetch(`${API_BASE}/api/admin/me`, { credentials: 'include' });
+        const response = await apiFetch('/api/admin/me', { credentials: 'include' });
         if (!response.ok) throw new Error('session');
         const user = await response.json();
         localStorage.setItem('admin_user', JSON.stringify(user));
@@ -110,7 +131,7 @@ function bindEvents() {
     document.getElementById('close-notifications')?.addEventListener('click', closeNotificationsPanel);
     els.panelBackdrop?.addEventListener('click', closeNotificationsPanel);
     document.getElementById('dash-logout')?.addEventListener('click', () => {
-        fetch(`${API_BASE}/api/auth/logout`, { credentials: 'include', method: 'POST' }).catch(() => undefined);
+        apiFetch('/api/auth/logout', { credentials: 'include', method: 'POST' }).catch(() => undefined);
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_user');
         sessionStorage.setItem('admin_open_login', '1');
@@ -145,7 +166,7 @@ async function fetchCommits() {
     setLoading(true);
 
     try {
-        const response = await fetch(`${API_BASE}/api/commits`, {
+        const response = await apiFetch('/api/commits', {
             credentials: 'include'
         });
 
@@ -385,7 +406,7 @@ async function reviewCommit(id, action) {
     }
 
     try {
-        const response = await fetch(`${API_BASE}/api/commits/${id}/${action}`, {
+        const response = await apiFetch(`/api/commits/${id}/${action}`, {
             method: 'POST',
             credentials: 'include',
             headers,

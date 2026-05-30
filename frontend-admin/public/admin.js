@@ -1,6 +1,37 @@
 // admin.js - Europa Explorer CMS
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = (
+        window.EUROEXPLORER_API_BASE
+        || document.querySelector('meta[name="europa-api-base"]')?.content
+        || (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000' : '')
+    ).replace(/\/+$/, '');
+
+    function apiUrl(path) {
+        if (!API_BASE) {
+            throw new Error('API_NOT_CONFIGURED');
+        }
+        return `${API_BASE}${path}`;
+    }
+
+    async function apiFetch(path, options = {}, timeoutMs = 15000) {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(apiUrl(path), { ...options, signal: controller.signal });
+        } finally {
+            window.clearTimeout(timeout);
+        }
+    }
+
+    function adminApiErrorMessage(error) {
+        if (error?.message === 'API_NOT_CONFIGURED') {
+            return 'Backend Render nao configurado. Defina o URL da API antes de iniciar sessao.';
+        }
+        if (error?.name === 'AbortError') {
+            return 'O backend demorou demasiado a responder. Confirme se o Render esta ativo.';
+        }
+        return 'Servidor offline. Certifique-se de que o backend esta a correr.';
+    }
 
     const modalHtml = `
         <div id="admin-login-modal" aria-hidden="true">
@@ -140,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_user');
         updateLoginButtonState();
-        await fetch(`${API_BASE}/api/auth/logout`, {
+        await apiFetch('/api/auth/logout', {
             method: 'POST',
             credentials: 'include'
         }).catch(() => undefined);
@@ -288,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.textContent = 'A validar...';
 
         try {
-            const res = await fetch(`${API_BASE}/api/auth/login`, {
+            const res = await apiFetch('/api/auth/login', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -313,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkForRejections();
             }
         } catch (err) {
-            errEl.textContent = 'Servidor offline. Certifique-se de que o backend esta a correr.';
+            errEl.textContent = adminApiErrorMessage(err);
             errEl.style.display = 'block';
         } finally {
             submitButton.disabled = false;
@@ -1242,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const res = await fetch(`${API_BASE}/api/upload`, {
+            const res = await apiFetch('/api/upload', {
                 method: 'POST',
                 credentials: 'include',
                 body: formData
@@ -1526,7 +1557,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const diff = serializeContent({ includeStats: isSuperAdmin() });
 
         try {
-            const res = await fetch(`${API_BASE}/api/commits`, {
+            const res = await apiFetch('/api/commits', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -1556,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!countryId) return;
 
         try {
-            const res = await fetch(`${API_BASE}/api/countries/${encodeURIComponent(countryId)}/content`, {
+            const res = await apiFetch(`/api/countries/${encodeURIComponent(countryId)}/content`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
@@ -1574,7 +1605,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchAndRenderCountryData(countryId) {
         try {
-            const res = await fetch(`${API_BASE}/api/countries/${encodeURIComponent(countryId)}`);
+            const res = await apiFetch(`/api/countries/${encodeURIComponent(countryId)}`);
             if (res.ok) {
                 const data = await res.json();
                 const content = data.content || {};
@@ -1642,7 +1673,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkForRejections() {
         try {
-            const res = await fetch(`${API_BASE}/api/commits/me`, {
+            const res = await apiFetch('/api/commits/me', {
                 credentials: 'include'
             });
 
@@ -1673,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function hydrateAdminSession() {
         localStorage.removeItem('admin_token');
         try {
-            const res = await fetch(`${API_BASE}/api/admin/me`, { credentials: 'include' });
+            const res = await apiFetch('/api/admin/me', { credentials: 'include' });
             if (!res.ok) throw new Error('session');
             const user = await res.json();
             setStoredAdminUser(user);
