@@ -469,8 +469,12 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    fetch(`${API_BASE}/api/auth/logout`, { credentials: 'include', method: 'POST' }).catch(() => undefined);
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, { credentials: 'include', method: 'POST' });
+    } catch {
+      // Keep logout local even if the network request fails.
+    }
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_user');
     setToken('');
@@ -482,6 +486,7 @@ function App() {
     setStatusFilter('ALL');
     setNotificationsOpen(false);
     setSettingsOpen(false);
+    window.location.assign(LANDING_PAGE_URL);
   };
 
   const handleApprove = async (id: string) => {

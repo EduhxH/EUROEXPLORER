@@ -364,7 +364,13 @@ def set_auth_cookie(response: Response, token: str):
 
 
 def clear_auth_cookie(response: Response):
-    response.delete_cookie(AUTH_COOKIE_NAME, path="/")
+    response.delete_cookie(
+        AUTH_COOKIE_NAME,
+        path="/",
+        secure=COOKIE_SECURE,
+        httponly=True,
+        samesite=COOKIE_SAMESITE,
+    )
 
 
 def normalize_declared_mime(value: Optional[str]) -> str:
