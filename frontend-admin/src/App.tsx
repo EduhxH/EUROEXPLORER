@@ -1,4 +1,4 @@
-﻿import { Dispatch, FormEvent, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { Dispatch, FormEvent, SetStateAction, useEffect, useMemo, useState } from 'react';
 import anime from 'animejs';
 import {
   BarChart3,
@@ -155,9 +155,9 @@ function getStoredUser(): AdminUser | null {
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return 'Nao registado';
+  if (!value) return 'Não registado';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Data indisponivel';
+  if (Number.isNaN(date.getTime())) return 'Data indisponível';
 
   return new Intl.DateTimeFormat('pt-PT', {
     day: '2-digit',
@@ -197,8 +197,8 @@ function avatarUrl(user?: AdminUser | null) {
 function describeDiff(diff: CommitDiff) {
   const details: string[] = [];
 
-  if (diff.desc) details.push('Descricao alterada');
-  if (Array.isArray(diff.sections)) details.push(`${diff.sections.length} seccoes recebidas`);
+  if (diff.desc) details.push('Descrição alterada');
+  if (Array.isArray(diff.sections)) details.push(`${diff.sections.length} secções recebidas`);
   if (Array.isArray(diff.images)) details.push(`${diff.images.length} imagens recebidas`);
 
   return details.length ? details : ['Diff recebido sem campos classificados'];
@@ -208,7 +208,7 @@ function toNotification(commit: Commit) {
   return {
     id: commit._id,
     user: commit.author_name,
-    message: commit.message || `${commit.author_name} fez uma alteracao!`,
+    message: commit.message || `${commit.author_name} fez uma alteração!`,
     area: commit.country_id,
     status: commit.status,
     date: commit.created_at,
@@ -298,7 +298,7 @@ function App() {
       const response = await fetch(`${API_BASE}/api/commits`, { credentials: 'include', headers: authHeaders(authToken) });
       setCommits(await readJson<Commit[]>(response));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nao foi possivel carregar as alteracoes.');
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar as alterações.');
     } finally {
       setLoading(false);
     }
@@ -463,7 +463,7 @@ function App() {
       setLoginPassword('');
       await refreshAll(SESSION_FLAG);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nao foi possivel iniciar sessao.');
+      setError(err instanceof Error ? err.message : 'Não foi possível iniciar sessão.');
     } finally {
       setLoginLoading(false);
     }
@@ -496,7 +496,7 @@ function App() {
       await request(`/api/commits/${id}/approve`, { method: 'POST' });
       await fetchCommits();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao aprovar alteracao.');
+      setError(err instanceof Error ? err.message : 'Erro ao aprovar alteração.');
     } finally {
       setActionId(null);
     }
@@ -505,7 +505,7 @@ function App() {
   const handleReject = async (id: string) => {
     const note = rejectNotes[id]?.trim();
     if (!note) {
-      setError('Escreva uma justificacao antes de rejeitar a alteracao.');
+      setError('Escreva uma justificação antes de rejeitar a alteração.');
       return;
     }
     setActionId(id);
@@ -515,7 +515,7 @@ function App() {
       setRejectNotes((current) => ({ ...current, [id]: '' }));
       await fetchCommits();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao rejeitar alteracao.');
+      setError(err instanceof Error ? err.message : 'Erro ao rejeitar alteração.');
     } finally {
       setActionId(null);
     }
@@ -555,8 +555,8 @@ function App() {
             </div>
 
             <div className="login-heading">
-              <h1 id="login-title">Admin sign in</h1>
-              <p>Inicie sessao com uma conta de administrador.</p>
+              <h1 id="login-title">Login de administradores</h1>
+              <p>Inicie sessão com uma conta de administrador.</p>
             </div>
 
             {error && <div className="login-error" role="alert">{error}</div>}
@@ -591,7 +591,7 @@ function App() {
         <a className="dashboard-denied-back" href={LANDING_PAGE_URL}>Voltar para website</a>
         <section>
           <div className="dashboard-denied-icon">!</div>
-          <h1>VOCE NAO TEM ACESSO A ESTA PAGINA. APENAS SUPER ADMINS PODEM VER A DASHBOARD.</h1>
+          <h1>VOCÊ NÃO TEM ACESSO A ESTA PÁGINA. APENAS SUPER ADMINS PODEM VER A DASHBOARD.</h1>
         </section>
       </main>
     );
@@ -617,13 +617,13 @@ function App() {
             </div>
 
             <div className="topbar-actions">
-              <button aria-label="Abrir menu de notificacoes" className="circle-button has-dot" onClick={() => setNotificationsOpen(true)} type="button">
+              <button aria-label="Abrir menu de notificações" className="circle-button has-dot" onClick={() => setNotificationsOpen(true)} type="button">
                 <Bell size={22} />
               </button>
-              <button aria-label="Abrir definicoes" className="profile-chip profile-button" onClick={() => setSettingsOpen(true)} type="button">
+              <button aria-label="Abrir definições" className="profile-chip profile-button" onClick={() => setSettingsOpen(true)} type="button">
                 <Avatar user={user} />
                 <span>
-                  <strong>{user?.username ?? 'Sessao autenticada'}</strong>
+                  <strong>{user?.username ?? 'Sessão autenticada'}</strong>
                   <small>{user?.role ?? 'Administrador'}</small>
                 </span>
               </button>
@@ -640,7 +640,7 @@ function App() {
               <div className="dashboard-buttons">
                 <button className="primary-action" onClick={() => setNotificationsOpen(true)} type="button">
                   <Bell size={21} />
-                  Menu de Notificacoes
+                  Menu de Notificações
                 </button>
                 <button className="outline-action" onClick={() => refreshAll()} type="button">
                   <RefreshCw size={18} />
@@ -726,9 +726,9 @@ function App() {
 function viewTitle(view: ViewKey) {
   return {
     dashboard: 'Dashboard',
-    notifications: 'Notificacoes',
-    calendar: 'Calendario',
-    analytics: 'Analise',
+    notifications: 'Notificações',
+    calendar: 'Calendário',
+    analytics: 'Análise',
     team: 'Equipa',
     reminders: 'Lembretes',
   }[view];
@@ -737,9 +737,9 @@ function viewTitle(view: ViewKey) {
 function viewSubtitle(view: ViewKey) {
   return {
     dashboard: 'Resumo operacional com dados carregados da API.',
-    notifications: 'Alteracoes reais submetidas pelos utilizadores.',
-    calendar: 'Calendario construido a partir das datas reais dos commits.',
-    analytics: 'Metricas calculadas a partir dos commits reais.',
+    notifications: 'Alterações reais submetidas pelos utilizadores.',
+    calendar: 'Calendário construído a partir das datas reais dos commits.',
+    analytics: 'Métricas calculadas a partir dos commits reais.',
     team: 'Utilizadores reais registados no sistema.',
     reminders: 'Lembretes persistidos na API.',
   }[view];
@@ -767,9 +767,9 @@ function Sidebar({
 }) {
   const items: Array<{ key: ViewKey; label: string; icon: JSX.Element; badge?: number }> = [
     { key: 'dashboard', label: 'Dashboard', icon: <Grid2X2 size={22} />, badge: commitsCount },
-    { key: 'notifications', label: 'Notificacoes', icon: <Bell size={22} /> },
-    { key: 'calendar', label: 'Calendario', icon: <CalendarDays size={22} /> },
-    { key: 'analytics', label: 'Analise', icon: <BarChart3 size={22} /> },
+    { key: 'notifications', label: 'Notificações', icon: <Bell size={22} /> },
+    { key: 'calendar', label: 'Calendário', icon: <CalendarDays size={22} /> },
+    { key: 'analytics', label: 'Análise', icon: <BarChart3 size={22} /> },
     { key: 'team', label: 'Equipa', icon: <UsersRound size={22} /> },
     { key: 'reminders', label: 'Lembretes', icon: <ListChecks size={22} /> },
   ];
@@ -799,7 +799,7 @@ function Sidebar({
         <span className="side-label">GERAL</span>
         <button className="side-item" onClick={onSettings} type="button">
           <Settings size={22} />
-          <span>Definicoes</span>
+          <span>Definições</span>
         </button>
         <button className="side-item" onClick={onLogout} type="button">
           <LogOut size={22} />
@@ -835,8 +835,8 @@ function DashboardView({
 }) {
   return (
     <>
-      <section className="stats-grid" aria-label="Resumo de alteracoes">
-        <StatCard active label="Total de alteracoes" value={stats.total} />
+      <section className="stats-grid" aria-label="Resumo de alterações">
+        <StatCard active label="Total de alterações" value={stats.total} />
         <StatCard label="Aprovadas" value={stats.approved} />
         <StatCard label="Pendentes" value={stats.pending} />
         <StatCard label="Rejeitadas" value={stats.rejected} />
@@ -874,8 +874,8 @@ function StatCard({ active, label, value }: { active?: boolean; label: string; v
 function AnalyticsCard({ chartData, total }: { chartData: ChartPoint[]; total: number }) {
   return (
     <article className="dash-card analytics-card">
-      <h2>Analise de alteracoes</h2>
-      <div className="bar-chart" aria-label="Grafico de alteracoes por dia">
+      <h2>Análise de alterações</h2>
+      <div className="bar-chart" aria-label="Gráfico de alterações por dia">
         {chartData.map((bar) => (
           <div className="chart-column" key={bar.key}>
             <div className="chart-bar">
@@ -886,7 +886,7 @@ function AnalyticsCard({ chartData, total }: { chartData: ChartPoint[]; total: n
           </div>
         ))}
       </div>
-      {total === 0 && <EmptyInline text="Sem alteracoes recebidas da API." />}
+      {total === 0 && <EmptyInline text="Sem alterações recebidas da API." />}
     </article>
   );
 }
@@ -910,7 +910,7 @@ function NotificationsCard({ notifications, onOpen }: { notifications: ReturnTyp
   return (
     <article className="dash-card project-card notification-menu-card">
       <div className="card-title-row">
-        <h2>Menu de Notificacoes</h2>
+        <h2>Menu de Notificações</h2>
         <button onClick={onOpen} type="button">
           <Bell size={16} />
           Abrir
@@ -927,7 +927,7 @@ function NotificationsCard({ notifications, onOpen }: { notifications: ReturnTyp
           </button>
         ))}
       </div>
-      {notifications.length === 0 && <EmptyInline text="Sem notificacoes recebidas da API." />}
+      {notifications.length === 0 && <EmptyInline text="Sem notificações recebidas da API." />}
     </article>
   );
 }
@@ -962,15 +962,15 @@ function ProgressCard({ stats }: { stats: Stats }) {
 
   return (
     <article className="dash-card progress-card">
-      <h2>Progresso de revisao</h2>
-      <div className="progress-meter" aria-label={`Progresso de revisao ${percent}%`}>
+      <h2>Progresso de revisão</h2>
+      <div className="progress-meter" aria-label={`Progresso de revisão ${percent}%`}>
         <svg viewBox="0 0 220 140" role="img">
           <path className="progress-track" d="M38 112 A74 74 0 0 1 182 112" />
           <path className="progress-arc" data-offset={offset} d="M38 112 A74 74 0 0 1 182 112" />
         </svg>
         <div>
           <strong>{percent}%</strong>
-          <span>{totalProcessed === 1 ? '1 revisao concluida' : `${totalProcessed} revisoes concluidas`}</span>
+          <span>{totalProcessed === 1 ? '1 revisão concluída' : `${totalProcessed} revisões concluídas`}</span>
         </div>
       </div>
       <div className="progress-legend">
@@ -1013,7 +1013,7 @@ function NotificationsView({ commits, notifications }: { commits: Commit[]; noti
   return (
     <section className="view-card">
       <div className="card-title-row">
-        <h2>Notificacoes</h2>
+        <h2>Notificações</h2>
       </div>
       <div className="notification-mini-list full">
         {notifications.map((item) => (
@@ -1027,7 +1027,7 @@ function NotificationsView({ commits, notifications }: { commits: Commit[]; noti
           </div>
         ))}
       </div>
-      {commits.length === 0 && <EmptyInline text="Sem notificacoes recebidas da API." />}
+      {commits.length === 0 && <EmptyInline text="Sem notificações recebidas da API." />}
     </section>
   );
 }
@@ -1049,12 +1049,12 @@ function AnalyticsView({ commits, stats }: { commits: Commit[]; stats: Stats }) 
       <MetricList title="Commits por utilizador" data={byUser} />
       <MetricList title="Commits por dia" data={byDay} />
       <MetricList title="Commits por semana" data={byWeek} />
-      <MetricList title="Commits por mes" data={byMonth} />
+      <MetricList title="Commits por mês" data={byMonth} />
       <article className="view-card">
-        <h2>Taxa de revisao</h2>
+        <h2>Taxa de revisão</h2>
         <div className="rate-grid">
-          <span><strong>{processed ? Math.round((stats.approved / processed) * 100) : 0}%</strong>Aprovacao</span>
-          <span><strong>{processed ? Math.round((stats.rejected / processed) * 100) : 0}%</strong>Rejeicao</span>
+          <span><strong>{processed ? Math.round((stats.approved / processed) * 100) : 0}%</strong>Aprovação</span>
+          <span><strong>{processed ? Math.round((stats.rejected / processed) * 100) : 0}%</strong>Rejeição</span>
         </div>
       </article>
     </section>
@@ -1121,7 +1121,7 @@ function CalendarView({ commits }: { commits: Commit[] }) {
           <h2>{formatDateOnly(cursor)}</h2>
           <button onClick={() => shift(1)} type="button"><ChevronRight size={18} /></button>
           <div className="segmented-control">
-            <button className={mode === 'month' ? 'active' : ''} onClick={() => setMode('month')} type="button">Mes</button>
+            <button className={mode === 'month' ? 'active' : ''} onClick={() => setMode('month')} type="button">Mês</button>
             <button className={mode === 'week' ? 'active' : ''} onClick={() => setMode('week')} type="button">Semana</button>
           </div>
         </div>
@@ -1143,7 +1143,7 @@ function CalendarView({ commits }: { commits: Commit[] }) {
         <div className="compact-list">
           {selectedCommits.map((commit) => (
             <div key={commit._id}>
-              <strong>{commit.message || `${commit.author_name} fez uma alteracao!`}</strong>
+              <strong>{commit.message || `${commit.author_name} fez uma alteração!`}</strong>
               <span>{commit.author_name} - {formatDate(commit.created_at)}</span>
             </div>
           ))}
@@ -1166,7 +1166,7 @@ function TeamView({ currentUser, onUserClick, users }: { currentUser: AdminUser 
           <span>Cargo</span>
           <span>Email</span>
           <span>Tipo</span>
-          <span>Ultima atividade</span>
+          <span>Última atividade</span>
         </div>
         {users.map((item) => (
           <button className="team-table-row" key={item.id} onClick={() => onUserClick(item.id)} type="button">
@@ -1175,15 +1175,15 @@ function TeamView({ currentUser, onUserClick, users }: { currentUser: AdminUser 
               <i className={item.online ? 'status-dot online' : 'status-dot offline'} />
               <strong>{item.username}</strong>
             </span>
-            <span>{item.cargo || 'Nao definido'}</span>
-            <span>{item.email || 'Nao definido'}</span>
+            <span>{item.cargo || 'Não definido'}</span>
+            <span>{item.email || 'Não definido'}</span>
             <span>{item.role}</span>
             <span>{formatDate(item.last_activity || item.last_seen)}</span>
           </button>
         ))}
       </div>
       {users.length === 0 && <EmptyInline text="Sem utilizadores recebidos da API." />}
-      {currentUser?.role !== 'SUPER_ADMIN' && <EmptyInline text="A edicao de utilizadores requer SUPER_ADMIN." />}
+      {currentUser?.role !== 'SUPER_ADMIN' && <EmptyInline text="A edição de utilizadores requer SUPER_ADMIN." />}
     </section>
   );
 }
@@ -1254,9 +1254,9 @@ function RemindersView({
       <article className="view-card">
         <h2>{editingId ? 'Editar lembrete' : 'Criar lembrete'}</h2>
         <form className="settings-form" onSubmit={saveReminder}>
-          <label>Titulo<input required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+          <label>Título<input required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
           <label>Notas<textarea value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
-          <label>Urgencia<select value={urgency} onChange={(event) => setUrgency(event.target.value)}><option value="">Sem valor</option><option value="high">Alta</option><option value="normal">Normal</option><option value="low">Baixa</option></select></label>
+          <label>Urgência<select value={urgency} onChange={(event) => setUrgency(event.target.value)}><option value="">Sem valor</option><option value="high">Alta</option><option value="normal">Normal</option><option value="low">Baixa</option></select></label>
           <label>Data<input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} /></label>
           <label>Utilizador<select value={assignedTo} onChange={(event) => setAssignedTo(event.target.value)}><option value="">Sem utilizador</option>{users.map((item) => <option key={item.id} value={item.id}>{item.username}</option>)}</select></label>
           <div className="form-actions">
@@ -1268,7 +1268,7 @@ function RemindersView({
 
       <article className="view-card">
         <div className="filters-row">
-          <select value={filterUrgency} onChange={(event) => setFilterUrgency(event.target.value)}><option value="">Urgencia</option><option value="high">Alta</option><option value="normal">Normal</option><option value="low">Baixa</option></select>
+          <select value={filterUrgency} onChange={(event) => setFilterUrgency(event.target.value)}><option value="">Urgência</option><option value="high">Alta</option><option value="normal">Normal</option><option value="low">Baixa</option></select>
           <select value={filterUser} onChange={(event) => setFilterUser(event.target.value)}><option value="">Utilizador</option>{users.map((item) => <option key={item.id} value={item.id}>{item.username}</option>)}</select>
           <input type="date" value={filterDate} onChange={(event) => setFilterDate(event.target.value)} />
         </div>
@@ -1319,11 +1319,11 @@ function CommitReviewList({
   users: AdminUser[];
 }) {
   return (
-    <section className="review-panel" aria-label="Fila de revisao administrativa">
+    <section className="review-panel" aria-label="Fila de revisão administrativa">
       <div className="review-head">
         <div>
-          <span>ALTERACOES RECENTES</span>
-          <h2>Revisao de propostas</h2>
+          <span>ALTERAÇÕES RECENTES</span>
+          <h2>Revisão de propostas</h2>
         </div>
 
         <div className="segmented-control" role="tablist" aria-label="Filtrar por estado">
@@ -1345,7 +1345,7 @@ function CommitReviewList({
         {commits.map((commit) => (
           <article className="review-item" key={commit._id}>
             <div>
-              <h3>{commit.message || `${commit.author_name} fez uma alteracao!`}</h3>
+              <h3>{commit.message || `${commit.author_name} fez uma alteração!`}</h3>
               <p>{commit.author_name} - {commit.country_id} - {formatDate(commit.created_at)}</p>
               <ul>{describeDiff(commit.diff ?? {}).map((detail) => <li key={detail}>{detail}</li>)}</ul>
             </div>
@@ -1365,7 +1365,7 @@ function CommitReviewList({
           <div className="review-empty">
             <ShieldCheck size={23} />
             <strong>Sem propostas filtradas</strong>
-            <span>Nao existem alteracoes recebidas para este filtro.</span>
+            <span>Não existem alterações recebidas para este filtro.</span>
           </div>
         )}
       </div>
@@ -1380,13 +1380,13 @@ function NotificationsPanel({ notifications, onClose }: { notifications: ReturnT
   }, {});
 
   return (
-    <aside className="notifications-panel" aria-label="Painel especial de alteracoes por utilizador">
+    <aside className="notifications-panel" aria-label="Painel especial de alterações por utilizador">
       <div className="panel-head">
         <div>
-          <span>Menu de Notificacoes</span>
-          <h2>Alteracoes por utilizador</h2>
+          <span>Menu de Notificações</span>
+          <h2>Alterações por utilizador</h2>
         </div>
-        <button aria-label="Fechar notificacoes" onClick={onClose} type="button"><X size={20} /></button>
+        <button aria-label="Fechar notificações" onClick={onClose} type="button"><X size={20} /></button>
       </div>
 
       <div className="panel-list">
@@ -1394,7 +1394,7 @@ function NotificationsPanel({ notifications, onClose }: { notifications: ReturnT
           <section className="notification-row" key={name}>
             <div className="notification-user">
               <div><img src={defaultUserIcon} alt="" /></div>
-              <span><strong>{name}</strong><small>{items.length} {items.length > 1 ? 'alteracoes' : 'alteracao'}</small></span>
+              <span><strong>{name}</strong><small>{items.length} {items.length > 1 ? 'alterações' : 'alteração'}</small></span>
             </div>
             {items.map((item) => (
               <article className="notification-change" key={item.id}>
@@ -1405,7 +1405,7 @@ function NotificationsPanel({ notifications, onClose }: { notifications: ReturnT
             ))}
           </section>
         ))}
-        {notifications.length === 0 && <EmptyInline text="Sem alteracoes recebidas da API." />}
+        {notifications.length === 0 && <EmptyInline text="Sem alterações recebidas da API." />}
       </div>
     </aside>
   );
@@ -1451,7 +1451,7 @@ function SettingsOverlay({
     <div className="overlay-shell" role="dialog" aria-modal="true">
       <section className="overlay-card">
         <div className="panel-head">
-          <div><span>Definicoes</span><h2>Perfil</h2></div>
+          <div><span>Definições</span><h2>Perfil</h2></div>
           <button aria-label="Fechar" onClick={onClose} type="button"><X size={20} /></button>
         </div>
         <form className="settings-form" onSubmit={saveProfile}>
@@ -1526,15 +1526,15 @@ function UserDetailsOverlay({
         ) : (
           <>
             <div className="detail-grid">
-              <span><strong>Email</strong>{details.user.email || 'Nao definido'}</span>
-              <span><strong>Cargo</strong>{details.user.cargo || 'Nao definido'}</span>
+              <span><strong>Email</strong>{details.user.email || 'Não definido'}</span>
+              <span><strong>Cargo</strong>{details.user.cargo || 'Não definido'}</span>
               <span><strong>Tipo</strong>{details.user.role}</span>
-              <span><strong>Ultima atividade</strong>{formatDate(details.user.last_activity || details.user.last_seen)}</span>
+              <span><strong>Última atividade</strong>{formatDate(details.user.last_activity || details.user.last_seen)}</span>
             </div>
-            <MetricList title="Permissoes" data={details.permissions.reduce<Record<string, number>>((acc, permission) => ({ ...acc, [permission]: 1 }), {})} />
+            <MetricList title="Permissões" data={details.permissions.reduce<Record<string, number>>((acc, permission) => ({ ...acc, [permission]: 1 }), {})} />
             <div className="compact-list">
               {details.recent_commits.map((commit) => (
-                <div key={commit._id}><strong>{commit.message || `${commit.author_name} fez uma alteracao!`}</strong><span>{commit.country_id} - {formatDate(commit.created_at)}</span></div>
+                <div key={commit._id}><strong>{commit.message || `${commit.author_name} fez uma alteração!`}</strong><span>{commit.country_id} - {formatDate(commit.created_at)}</span></div>
               ))}
             </div>
             {details.recent_commits.length === 0 && <EmptyInline text="Sem commits recentes recebidos para este utilizador." />}

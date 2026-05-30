@@ -25,16 +25,16 @@
                 </button>
                 <button class="dash-menu-item" id="dash-open-notifications" type="button">
                     <i data-lucide="bell"></i>
-                    <span>Notificacoes</span>
+                    <span>Notificações</span>
                     <em id="dash-nav-badge">0</em>
                 </button>
                 <button class="dash-menu-item" type="button">
                     <i data-lucide="calendar-days"></i>
-                    <span>Calendario</span>
+                    <span>Calendário</span>
                 </button>
                 <button class="dash-menu-item" type="button">
                     <i data-lucide="bar-chart-3"></i>
-                    <span>Analise</span>
+                    <span>Análise</span>
                 </button>
                 <button class="dash-menu-item" type="button">
                     <i data-lucide="users-round"></i>
@@ -44,7 +44,7 @@
                 <span class="dash-menu-label general">Geral</span>
                 <button class="dash-menu-item" type="button">
                     <i data-lucide="settings"></i>
-                    <span>Definicoes</span>
+                    <span>Definições</span>
                 </button>
                 <button class="dash-menu-item" type="button">
                     <i data-lucide="circle-help"></i>
@@ -59,7 +59,7 @@
             <section class="dash-download">
                 <span><i data-lucide="shield-check"></i></span>
                 <strong>Centro Admin</strong>
-                <p>Revisao das alteracoes enviadas pela equipa.</p>
+                <p>Revisão das alterações enviadas pela equipa.</p>
                 <button type="button" id="dash-sidebar-refresh">Atualizar</button>
             </section>
         </aside>
@@ -68,7 +68,7 @@
             <header class="dash-topbar">
                 <label class="dash-search">
                     <i data-lucide="search"></i>
-                    <input id="dash-search-input" type="search" placeholder="Pesquisar alteracoes">
+                    <input id="dash-search-input" type="search" placeholder="Pesquisar alterações">
                     <kbd>Ctrl F</kbd>
                 </label>
 
@@ -76,7 +76,7 @@
                     <button class="dash-icon-btn" type="button" aria-label="Mensagens">
                         <i data-lucide="mail"></i>
                     </button>
-                    <button class="dash-icon-btn" id="dash-bell" type="button" aria-label="Abrir notificacoes">
+                    <button class="dash-icon-btn" id="dash-bell" type="button" aria-label="Abrir notificações">
                         <i data-lucide="bell"></i>
                     </button>
                     <div class="dash-profile">
@@ -92,21 +92,21 @@
             <section class="dash-heading">
                 <div>
                     <h1>Dashboard</h1>
-                    <p>Reveja, aprove e acompanhe as alteracoes do Europa Explorer.</p>
+                    <p>Reveja, aprove e acompanhe as alterações do Europa Explorer.</p>
                 </div>
                 <div class="dash-heading-actions">
                     <button class="dash-primary" id="dash-refresh" type="button">
                         <i data-lucide="refresh-cw"></i>
                         Atualizar
                     </button>
-                    <button class="dash-secondary" id="dash-open-panel" type="button">Ver notificacoes</button>
+                    <button class="dash-secondary" id="dash-open-panel" type="button">Ver notificações</button>
                 </div>
             </section>
 
-            <section class="dash-stats" aria-label="Resumo de alteracoes">
+            <section class="dash-stats" aria-label="Resumo de alterações">
                 <article class="stat-card featured">
                     <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
-                    <span>Total de Alteracoes</span>
+                    <span>Total de Alterações</span>
                     <strong id="stat-total">0</strong>
                     <small><em id="delta-total">0</em> registadas no sistema</small>
                 </article>
@@ -120,29 +120,29 @@
                     <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
                     <span>Pendentes</span>
                     <strong id="stat-pending">0</strong>
-                    <small><em id="delta-pending">0</em> aguardam revisao</small>
+                    <small><em id="delta-pending">0</em> aguardam revisão</small>
                 </article>
                 <article class="stat-card">
                     <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
                     <span>Rejeitadas</span>
                     <strong id="stat-rejected">0</strong>
-                    <small>Com nota de correcao</small>
+                    <small>Com nota de correção</small>
                 </article>
             </section>
 
             <section class="dash-grid">
                 <article class="dash-card analytics-card">
                     <div class="card-heading">
-                        <h2>Atividade de Revisao</h2>
+                        <h2>Atividade de Revisão</h2>
                     </div>
-                    <div class="activity-chart" id="activity-chart" aria-label="Grafico de alteracoes por dia"></div>
+                    <div class="activity-chart" id="activity-chart" aria-label="Gráfico de alterações por dia"></div>
                 </article>
 
                 <article class="dash-card reminders-card">
                     <div class="card-heading">
                         <h2>Lembretes</h2>
                     </div>
-                    <strong id="reminder-title">Rever alteracoes pendentes</strong>
+                    <strong id="reminder-title">Rever alterações pendentes</strong>
                     <p id="reminder-time">Sem tarefas urgentes</p>
                     <button class="dash-primary full" id="reminder-action" type="button">
                         <i data-lucide="video"></i>
@@ -152,7 +152,7 @@
 
                 <article class="dash-card notifications-card">
                     <div class="card-heading row">
-                        <h2>Menu de Notificacoes</h2>
+                        <h2>Menu de Notificações</h2>
                         <button class="dash-mini-btn" id="notifications-new" type="button">+ Novo</button>
                     </div>
                     <div class="notification-list" id="notification-list"></div>
@@ -160,7 +160,7 @@
 
                 <article class="dash-card team-card">
                     <div class="card-heading row">
-                        <h2>Colaboracao da Equipa</h2>
+                        <h2>Colaboração da Equipa</h2>
                         <button class="dash-mini-btn" type="button">+ Membro</button>
                     </div>
                     <div class="team-list" id="team-list"></div>
@@ -168,7 +168,7 @@
 
                 <article class="dash-card progress-card">
                     <div class="card-heading">
-                        <h2>Progresso de Revisao</h2>
+                        <h2>Progresso de Revisão</h2>
                     </div>
                     <div class="progress-meter" id="progress-meter">
                         <div>
@@ -195,17 +195,17 @@
         </main>
     </div>
 
-    <aside class="notifications-panel" id="notifications-panel" aria-hidden="true" aria-label="Painel de notificacoes">
+    <aside class="notifications-panel" id="notifications-panel" aria-hidden="true" aria-label="Painel de notificações">
         <header>
             <div>
-                <span>Alteracoes</span>
-                <h2>Notificacoes da equipa</h2>
+                <span>Alterações</span>
+                <h2>Notificações da equipa</h2>
             </div>
-            <button class="dash-icon-btn" id="close-notifications" type="button" aria-label="Fechar notificacoes">
+            <button class="dash-icon-btn" id="close-notifications" type="button" aria-label="Fechar notificações">
                 <i data-lucide="x"></i>
             </button>
         </header>
-        <div class="panel-summary" id="panel-summary">0 alteracoes encontradas</div>
+        <div class="panel-summary" id="panel-summary">0 alterações encontradas</div>
         <div class="panel-list" id="panel-list"></div>
     </aside>
     <div class="panel-backdrop" id="panel-backdrop"></div>

@@ -92,7 +92,7 @@ function renderAccessDenied() {
             <a class="admin-access-back" href="index.html">Voltar para website</a>
             <section>
                 <div class="admin-access-icon">!</div>
-                <h1>VOCE NAO TEM ACESSO A ESTA PAGINA. APENAS SUPER ADMINS PODEM VER A DASHBOARD.</h1>
+                <h1>VOCÊ NÃO TEM ACESSO A ESTA PÁGINA. APENAS SUPER ADMINS PODEM VER A DASHBOARD.</h1>
             </section>
         </main>
     `;
@@ -179,7 +179,7 @@ async function fetchCommits() {
         }
 
         if (!response.ok) {
-            throw new Error('Nao foi possivel carregar as alteracoes.');
+            throw new Error('Não foi possível carregar as alterações.');
         }
 
         const data = await response.json();
@@ -197,7 +197,7 @@ function normalizeCommit(commit) {
     return {
         ...commit,
         author_name: commit.author_name || 'Utilizador',
-        message: commit.message || `Alteracao em ${commit.country_id || 'pais'}`,
+        message: commit.message || `Alteração em ${commit.country_id || 'país'}`,
         status: commit.status || 'PENDING',
         created_at: commit.created_at || new Date().toISOString()
     };
@@ -266,7 +266,7 @@ function renderChart(commits) {
         const height = 56 + Math.round((counts[index] / max) * 92);
         const tone = index === 1 ? 'filled' : index === 2 ? 'light' : index === 3 ? 'dark' : '';
         return `
-            <div class="chart-day" title="${counts[index]} alteracoes">
+            <div class="chart-day" title="${counts[index]} alterações">
                 <div class="chart-bar ${tone}" style="--bar-height:${height}px"></div>
                 <span>${labels[day.date.getDay()]}</span>
             </div>
@@ -280,9 +280,9 @@ function renderNotifications(commits) {
         .slice(0, 6);
 
     if (!latest.length) {
-        els.notifications.innerHTML = '<p class="empty-state">Sem notificacoes para mostrar.</p>';
-        els.panelList.innerHTML = '<p class="empty-state">Sem alteracoes registadas.</p>';
-        els.panelSummary.textContent = '0 alteracoes encontradas';
+        els.notifications.innerHTML = '<p class="empty-state">Sem notificações para mostrar.</p>';
+        els.panelList.innerHTML = '<p class="empty-state">Sem alterações registadas.</p>';
+        els.panelSummary.textContent = '0 alterações encontradas';
         return;
     }
 
@@ -291,7 +291,7 @@ function renderNotifications(commits) {
             <button class="notification-row" type="button" data-open-panel>
                 <span class="notification-icon" style="background:${iconColor(index)}">${initials(commit.author_name)}</span>
                 <span>
-                    <strong>${escapeHtml(commit.author_name)} fez uma alteracao!</strong>
+                    <strong>${escapeHtml(commit.author_name)} fez uma alteração!</strong>
                     <span>${escapeHtml(commit.message)} - ${formatDate(commit.created_at)}</span>
                 </span>
             </button>
@@ -302,13 +302,13 @@ function renderNotifications(commits) {
         button.addEventListener('click', openNotificationsPanel);
     });
 
-    els.panelSummary.textContent = `${commits.length} alteracoes encontradas`;
+    els.panelSummary.textContent = `${commits.length} alterações encontradas`;
     els.panelList.innerHTML = latest.concat(commits.slice(6)).map((commit) => {
         const canReview = commit.status === 'PENDING';
         return `
             <article class="panel-item">
-                <strong>${escapeHtml(commit.author_name)} fez uma alteracao!</strong>
-                <span>${escapeHtml(commit.country_id || 'Pais')} - ${escapeHtml(commit.message)}</span>
+                <strong>${escapeHtml(commit.author_name)} fez uma alteração!</strong>
+                <span>${escapeHtml(commit.country_id || 'País')} - ${escapeHtml(commit.message)}</span>
                 <small>${statusLabel(commit.status)} - ${formatDate(commit.created_at)}</small>
                 ${canReview ? `
                     <div class="panel-actions">
@@ -363,7 +363,7 @@ function renderTeam(commits) {
                 <span class="team-avatar">${initials(member.name)}</span>
                 <span>
                     <strong>${escapeHtml(member.name)}</strong>
-                    <span>${member.total} alteracoes - ${escapeHtml(member.latest.message)}</span>
+                    <span>${member.total} alterações - ${escapeHtml(member.latest.message)}</span>
                 </span>
                 <em class="team-status ${status}">${label}</em>
             </div>
@@ -383,12 +383,12 @@ function renderProgress(stats) {
 function renderReminder(commits) {
     const pending = commits.find((commit) => commit.status === 'PENDING');
     if (!pending) {
-        els.reminderTitle.textContent = 'Sem revisoes urgentes';
-        els.reminderTime.textContent = 'Todas as alteracoes filtradas estao tratadas.';
+        els.reminderTitle.textContent = 'Sem revisões urgentes';
+        els.reminderTime.textContent = 'Todas as alterações filtradas estão tratadas.';
         return;
     }
 
-    els.reminderTitle.textContent = `Rever ${pending.country_id || 'alteracao'}`;
+    els.reminderTitle.textContent = `Rever ${pending.country_id || 'alteração'}`;
     els.reminderTime.textContent = `${pending.author_name} - ${formatDate(pending.created_at)}`;
 }
 
@@ -399,7 +399,7 @@ async function reviewCommit(id, action) {
     const headers = {};
 
     if (action === 'reject') {
-        const note = window.prompt('Justificacao para rejeitar esta alteracao:');
+        const note = window.prompt('Justificação para rejeitar esta alteração:');
         if (!note?.trim()) return;
         headers['Content-Type'] = 'application/json';
         body = JSON.stringify({ note: note.trim() });
@@ -419,14 +419,14 @@ async function reviewCommit(id, action) {
 
         await fetchCommits();
     } catch (error) {
-        renderError(error instanceof Error ? error.message : 'Erro ao rever alteracao.');
+        renderError(error instanceof Error ? error.message : 'Erro ao rever alteração.');
     }
 }
 
 function renderError(message) {
     els.notifications.innerHTML = `<p class="dash-error">${escapeHtml(message)}</p>`;
     els.panelList.innerHTML = `<p class="dash-error">${escapeHtml(message)}</p>`;
-    els.panelSummary.textContent = 'Erro ao carregar alteracoes';
+    els.panelSummary.textContent = 'Erro ao carregar alterações';
 }
 
 function setLoading(isLoading) {
@@ -567,7 +567,7 @@ function toDateKey(value) {
 
 function formatDate(value) {
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Data indisponivel';
+    if (Number.isNaN(date.getTime())) return 'Data indisponível';
 
     return new Intl.DateTimeFormat('pt-PT', {
         day: '2-digit',

@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function adminApiErrorMessage(error) {
         if (error?.message === 'API_NOT_CONFIGURED') {
-            return 'Backend Render nao configurado. Defina o URL da API antes de iniciar sessao.';
+            return 'Backend Render não configurado. Defina o URL da API antes de iniciar sessão.';
         }
         if (error?.name === 'AbortError') {
             return 'O backend demorou demasiado a responder. Confirme se o Render esta ativo.';
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="admin-login-mark">EU</div>
                     <div class="admin-login-caption">
                         <strong>Europa Explorer</strong>
-                        <span>Centro de administracao</span>
+                        <span>Centro de administração</span>
                     </div>
                     <div class="admin-login-dots" aria-hidden="true">
                         <span></span>
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="admin-login-copy">
                         <span class="admin-login-kicker">Acesso reservado</span>
                         <h2 id="admin-login-title">Login de administradores</h2>
-                        <p>Entre com a sua conta para rever alteracoes, gerir propostas e acompanhar notificacoes.</p>
+                        <p>Entre com a sua conta para rever alterações, gerir propostas e acompanhar notificações.</p>
                     </div>
 
                     <form id="admin-login-form" class="admin-login-form">
@@ -107,12 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <aside class="editor-rail" aria-label="Categorias do editor">
                 <button class="active" type="button" data-editor-tab="text"><span aria-hidden="true">T</span><strong>Texto</strong></button>
                 <button type="button" data-editor-tab="images"><span aria-hidden="true">I</span><strong>Imagens</strong></button>
-                <button type="button" data-editor-tab="sections"><span aria-hidden="true">S</span><strong>Secoes</strong></button>
+                <button type="button" data-editor-tab="sections"><span aria-hidden="true">S</span><strong>Secções</strong></button>
                 <button type="button" data-editor-tab="uploads"><span aria-hidden="true">U</span><strong>Uploads</strong></button>
                 <button type="button" data-editor-tab="adjustments"><span aria-hidden="true">A</span><strong>Ajustes</strong></button>
-                <button type="button" data-editor-tab="history"><span aria-hidden="true">H</span><strong>Historico</strong></button>
+                <button type="button" data-editor-tab="history"><span aria-hidden="true">H</span><strong>Histórico</strong></button>
                 <button type="button" data-editor-tab="settings"><span aria-hidden="true">C</span><strong>Config.</strong></button>
-                <button type="button" data-editor-tab="new-section"><span aria-hidden="true">+</span><strong>Nova Secao</strong></button>
+                <button type="button" data-editor-tab="new-section"><span aria-hidden="true">+</span><strong>Nova Secção</strong></button>
             </aside>
             <aside class="editor-menu" aria-label="Submenu do editor">
                 <div class="editor-menu-head">
@@ -121,13 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div id="editor-menu-content" class="editor-menu-content"></div>
             </aside>
-            <header class="editor-topbar" aria-label="Acoes do editor">
+            <header class="editor-topbar" aria-label="Ações do editor">
                 <button type="button" id="editor-undo">Undo</button>
                 <button type="button" id="editor-redo">Redo</button>
                 <button type="button" id="editor-save">Guardar</button>
-                <button type="button" id="editor-preview">Pre-visualizar</button>
+                <button type="button" id="editor-preview">Pré-visualizar</button>
                 <button type="button" id="editor-publish">Publicar</button>
-                <button type="button" id="editor-exit">Sair da edicao</button>
+                <button type="button" id="editor-exit">Sair da edição</button>
             </header>
             <aside class="editor-context" aria-label="Painel contextual">
                 <div id="editor-context-content"></div>
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.type = 'button';
         btn.className = 'auth-login-btn';
         btn.dataset.adminAuth = 'true';
-        btn.setAttribute('aria-label', 'Aceder ao painel de administracao');
+        btn.setAttribute('aria-label', 'Aceder ao painel de administração');
         btn.textContent = 'Admin';
         container.appendChild(btn);
     }
@@ -432,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.createElement('button');
             editBtn.id = 'admin-edit-btn';
             editBtn.className = 'btn-stamp';
-            editBtn.textContent = 'EDITAR PAIS';
+            editBtn.textContent = 'EDITAR PAÍS';
             ccFooter.insertBefore(editBtn, ccFooter.firstChild);
             editBtn.addEventListener('click', () => {
                 if (isEditing) closeEditor(true);
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shell?.classList.remove('active', 'has-selection');
         shell?.setAttribute('aria-hidden', 'true');
         if (editBtn) {
-            editBtn.textContent = 'EDITAR PAIS';
+            editBtn.textContent = 'EDITAR PAÍS';
             editBtn.style.background = '#173d83';
         }
         clearSelection();
@@ -689,12 +689,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const titles = {
             text: 'Texto',
             images: 'Imagens',
-            sections: 'Secoes',
+            sections: 'Secções',
             uploads: 'Uploads',
             adjustments: 'Ajustes',
-            history: 'Historico',
-            settings: 'Configuracoes',
-            'new-section': 'Nova Secao'
+            history: 'Histórico',
+            settings: 'Configurações',
+            'new-section': 'Nova Secção'
         };
         const title = document.getElementById('editor-menu-title');
         if (title) title.textContent = titles[tab] || 'Editor';
@@ -717,43 +717,43 @@ document.addEventListener('DOMContentLoaded', () => {
             menu.innerHTML = `
                 <button class="editor-menu-button" type="button" data-action="upload-floating">Carregar imagem</button>
                 <button class="editor-menu-button" type="button" data-action="remove-selected-image">Remover imagem selecionada</button>
-                <p>As imagens carregadas sao guardadas no backend e entram no pedido de alteracao.</p>
+                <p>As imagens carregadas são guardadas no backend e entram no pedido de alteração.</p>
             `;
         } else if (editor.activeTab === 'sections') {
             menu.innerHTML = `
-                <p>${sectionCount} secoes personalizadas neste pais.</p>
-                <button class="editor-menu-button" type="button" data-action="select-sections">Selecionar secoes</button>
+                <p>${sectionCount} secções personalizadas neste país.</p>
+                <button class="editor-menu-button" type="button" data-action="select-sections">Selecionar secções</button>
             `;
         } else if (editor.activeTab === 'new-section') {
             menu.innerHTML = `
                 <form class="new-section-form" id="new-section-form">
-                    <label>Nome da secao
+                    <label>Nome da secção
                         <input id="new-section-name" type="text" autocomplete="off">
                     </label>
-                    <button class="editor-menu-button" type="submit">Criar Secao</button>
+                    <button class="editor-menu-button" type="submit">Criar Secção</button>
                 </form>
                 <div class="section-manager" id="section-manager">${renderSectionManager()}</div>
             `;
         } else if (editor.activeTab === 'uploads') {
             menu.innerHTML = `
                 <button class="editor-menu-button" type="button" data-action="upload-floating">Escolher ficheiro</button>
-                <p>Tambem pode arrastar uma imagem para a area do pais.</p>
+                <p>Também pode arrastar uma imagem para a área do país.</p>
             `;
         } else if (editor.activeTab === 'adjustments') {
             menu.innerHTML = `
-                <button class="editor-menu-button" type="button" data-action="snap-all">Alinhar elementos a grelha</button>
-                <button class="editor-menu-button" type="button" data-action="clear-selection">Limpar selecao</button>
+                <button class="editor-menu-button" type="button" data-action="snap-all">Alinhar elementos à grelha</button>
+                <button class="editor-menu-button" type="button" data-action="clear-selection">Limpar seleção</button>
             `;
         } else if (editor.activeTab === 'history') {
             menu.innerHTML = `
                 <button class="editor-menu-button" type="button" data-action="undo">Undo</button>
                 <button class="editor-menu-button" type="button" data-action="redo">Redo</button>
-                <p>${Math.max(editor.history.length - 1, 0)} passos no historico. ${editor.future.length} passos para refazer.</p>
+                <p>${Math.max(editor.history.length - 1, 0)} passos no histórico. ${editor.future.length} passos para refazer.</p>
             `;
         } else {
             menu.innerHTML = `
-                <p>Permissao atual: <strong>${getAdminUser()?.role || 'Sem sessao'}</strong></p>
-                <p>${superAdmin ? 'Pode editar todos os dados do pais.' : 'Pode editar conteudo editorial; apenas dados estatisticos exigem SUPER_ADMIN.'}</p>
+                <p>Permissão atual: <strong>${getAdminUser()?.role || 'Sem sessão'}</strong></p>
+                <p>${superAdmin ? 'Pode editar todos os dados do país.' : 'Pode editar conteúdo editorial; apenas dados estatísticos exigem SUPER_ADMIN.'}</p>
             `;
         }
 
@@ -766,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = menu.querySelector('#new-section-name');
             const name = input?.value.trim();
             if (!name) {
-                showEditorNotice('Escreva o nome da secao.');
+                showEditorNotice('Escreva o nome da secção.');
                 return;
             }
             createCustomSection({ title: escapeHtml(name) });
@@ -797,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderSectionManager() {
         const sections = Array.from(document.querySelectorAll('.country-custom-section'));
-        if (!sections.length) return '<p>0 secoes criadas.</p>';
+        if (!sections.length) return '<p>0 secções criadas.</p>';
         return sections.map((section, index) => {
             const id = section.dataset.sectionId;
             const name = section.querySelector('.custom-section-title')?.textContent?.trim() || '';
@@ -868,7 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!context) return;
 
         if (!editor.selected) {
-            context.innerHTML = '<h3>Painel contextual</h3><p>Selecione texto, imagem ou secao para editar.</p>';
+            context.innerHTML = '<h3>Painel contextual</h3><p>Selecione texto, imagem ou secção para editar.</p>';
             return;
         }
 
@@ -920,7 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" data-element-action="delete">Excluir</button>
                 <button type="button" data-element-action="lock">Bloquear</button>
                 <button type="button" data-element-action="front">Trazer para frente</button>
-                <button type="button" data-element-action="back">Enviar para tras</button>
+                <button type="button" data-element-action="back">Enviar para trás</button>
             </div>
         `;
         context.querySelector('[data-text-style="fontWeight"]').value = selected.style.fontWeight || styles.fontWeight || '400';
@@ -990,10 +990,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSectionContext(context) {
         const section = editor.selected.closest('.country-custom-section') || editor.selected;
         context.innerHTML = `
-            <h3>Secao</h3>
+            <h3>Secção</h3>
             <button class="editor-menu-button" type="button" data-section-action="upload">Adicionar/Substituir imagem</button>
-            <button class="editor-menu-button" type="button" data-section-action="duplicate">Duplicar secao</button>
-            <button class="editor-menu-button" type="button" data-section-action="delete">Excluir secao</button>
+            <button class="editor-menu-button" type="button" data-section-action="duplicate">Duplicar secção</button>
+            <button class="editor-menu-button" type="button" data-section-action="delete">Excluir secção</button>
             <div class="editor-segment">
                 <button type="button" data-section-action="up">Subir</button>
                 <button type="button" data-section-action="down">Descer</button>
@@ -1296,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             pushHistory();
         } catch (err) {
-            showEditorNotice('Nao foi possivel carregar a imagem.');
+            showEditorNotice('Não foi possível carregar a imagem.');
         }
     }
 
@@ -1596,10 +1596,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(serializeContent({ includeStats: true }))
             });
             if (!res.ok) throw new Error('publish');
-            showToast('Conteudo publicado com sucesso.');
+            showToast('Conteúdo publicado com sucesso.');
             closeEditor(false);
         } catch (err) {
-            showEditorNotice('Nao foi possivel publicar o conteudo.');
+            showEditorNotice('Não foi possível publicar o conteúdo.');
         }
     }
 
@@ -1664,7 +1664,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function togglePreview() {
         editor.preview = !editor.preview;
         document.body.classList.toggle('country-editor-preview', editor.preview);
-        document.getElementById('editor-preview').textContent = editor.preview ? 'Voltar a edicao' : 'Pre-visualizar';
+        document.getElementById('editor-preview').textContent = editor.preview ? 'Voltar a edição' : 'Pré-visualizar';
     }
 
     function showEditorNotice(message) {
