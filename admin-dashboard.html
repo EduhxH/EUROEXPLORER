@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Europa Explorer - Dashboard Admin</title>
+    <link rel="stylesheet" href="admin-dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="dash-shell">
+        <aside class="dash-sidebar" aria-label="Navegacao principal">
+            <a class="dash-brand" href="index.html" aria-label="Europa Explorer">
+                <span class="dash-brand-icon" aria-hidden="true"><i data-lucide="globe-2"></i></span>
+                <strong>Europa</strong>
+            </a>
+
+            <nav class="dash-menu" aria-label="Menu">
+                <span class="dash-menu-label">Menu</span>
+                <button class="dash-menu-item active" type="button">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="dash-menu-item" id="dash-open-notifications" type="button">
+                    <i data-lucide="bell"></i>
+                    <span>Notificacoes</span>
+                    <em id="dash-nav-badge">0</em>
+                </button>
+                <button class="dash-menu-item" type="button">
+                    <i data-lucide="calendar-days"></i>
+                    <span>Calendario</span>
+                </button>
+                <button class="dash-menu-item" type="button">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analise</span>
+                </button>
+                <button class="dash-menu-item" type="button">
+                    <i data-lucide="users-round"></i>
+                    <span>Equipa</span>
+                </button>
+
+                <span class="dash-menu-label general">Geral</span>
+                <button class="dash-menu-item" type="button">
+                    <i data-lucide="settings"></i>
+                    <span>Definicoes</span>
+                </button>
+                <button class="dash-menu-item" type="button">
+                    <i data-lucide="circle-help"></i>
+                    <span>Ajuda</span>
+                </button>
+                <button class="dash-menu-item" id="dash-logout" type="button">
+                    <i data-lucide="log-out"></i>
+                    <span>Sair</span>
+                </button>
+            </nav>
+
+            <section class="dash-download">
+                <span><i data-lucide="shield-check"></i></span>
+                <strong>Centro Admin</strong>
+                <p>Revisao das alteracoes enviadas pela equipa.</p>
+                <button type="button" id="dash-sidebar-refresh">Atualizar</button>
+            </section>
+        </aside>
+
+        <main class="dash-main">
+            <header class="dash-topbar">
+                <label class="dash-search">
+                    <i data-lucide="search"></i>
+                    <input id="dash-search-input" type="search" placeholder="Pesquisar alteracoes">
+                    <kbd>Ctrl F</kbd>
+                </label>
+
+                <div class="dash-top-actions">
+                    <button class="dash-icon-btn" type="button" aria-label="Mensagens">
+                        <i data-lucide="mail"></i>
+                    </button>
+                    <button class="dash-icon-btn" id="dash-bell" type="button" aria-label="Abrir notificacoes">
+                        <i data-lucide="bell"></i>
+                    </button>
+                    <div class="dash-profile">
+                        <span id="dash-profile-avatar">EU</span>
+                        <div>
+                            <strong id="dash-profile-name">Admin</strong>
+                            <small id="dash-profile-email">super admin</small>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dash-heading">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Reveja, aprove e acompanhe as alteracoes do Europa Explorer.</p>
+                </div>
+                <div class="dash-heading-actions">
+                    <button class="dash-primary" id="dash-refresh" type="button">
+                        <i data-lucide="refresh-cw"></i>
+                        Atualizar
+                    </button>
+                    <button class="dash-secondary" id="dash-open-panel" type="button">Ver notificacoes</button>
+                </div>
+            </section>
+
+            <section class="dash-stats" aria-label="Resumo de alteracoes">
+                <article class="stat-card featured">
+                    <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
+                    <span>Total de Alteracoes</span>
+                    <strong id="stat-total">0</strong>
+                    <small><em id="delta-total">0</em> registadas no sistema</small>
+                </article>
+                <article class="stat-card">
+                    <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
+                    <span>Aprovadas</span>
+                    <strong id="stat-approved">0</strong>
+                    <small><em id="delta-approved">0</em> prontas no atlas</small>
+                </article>
+                <article class="stat-card">
+                    <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
+                    <span>Pendentes</span>
+                    <strong id="stat-pending">0</strong>
+                    <small><em id="delta-pending">0</em> aguardam revisao</small>
+                </article>
+                <article class="stat-card">
+                    <button type="button" aria-label="Abrir detalhes"><i data-lucide="arrow-up-right"></i></button>
+                    <span>Rejeitadas</span>
+                    <strong id="stat-rejected">0</strong>
+                    <small>Com nota de correcao</small>
+                </article>
+            </section>
+
+            <section class="dash-grid">
+                <article class="dash-card analytics-card">
+                    <div class="card-heading">
+                        <h2>Atividade de Revisao</h2>
+                    </div>
+                    <div class="activity-chart" id="activity-chart" aria-label="Grafico de alteracoes por dia"></div>
+                </article>
+
+                <article class="dash-card reminders-card">
+                    <div class="card-heading">
+                        <h2>Lembretes</h2>
+                    </div>
+                    <strong id="reminder-title">Rever alteracoes pendentes</strong>
+                    <p id="reminder-time">Sem tarefas urgentes</p>
+                    <button class="dash-primary full" id="reminder-action" type="button">
+                        <i data-lucide="video"></i>
+                        Abrir fila
+                    </button>
+                </article>
+
+                <article class="dash-card notifications-card">
+                    <div class="card-heading row">
+                        <h2>Menu de Notificacoes</h2>
+                        <button class="dash-mini-btn" id="notifications-new" type="button">+ Novo</button>
+                    </div>
+                    <div class="notification-list" id="notification-list"></div>
+                </article>
+
+                <article class="dash-card team-card">
+                    <div class="card-heading row">
+                        <h2>Colaboracao da Equipa</h2>
+                        <button class="dash-mini-btn" type="button">+ Membro</button>
+                    </div>
+                    <div class="team-list" id="team-list"></div>
+                </article>
+
+                <article class="dash-card progress-card">
+                    <div class="card-heading">
+                        <h2>Progresso de Revisao</h2>
+                    </div>
+                    <div class="progress-meter" id="progress-meter">
+                        <div>
+                            <strong id="progress-value">0%</strong>
+                            <span>Aprovado</span>
+                        </div>
+                    </div>
+                    <div class="progress-legend">
+                        <span><em class="done"></em>Aprovado</span>
+                        <span><em class="work"></em>Pendente</span>
+                        <span><em class="wait"></em>Rejeitado</span>
+                    </div>
+                </article>
+
+                <article class="dash-card tracker-card">
+                    <h2>Time Tracker</h2>
+                    <div class="tracker-time" id="tracker-time">00:00:00</div>
+                    <div class="tracker-controls">
+                        <button type="button" aria-label="Pausar"><i data-lucide="pause"></i></button>
+                        <button type="button" aria-label="Parar"><i data-lucide="square"></i></button>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <aside class="notifications-panel" id="notifications-panel" aria-hidden="true" aria-label="Painel de notificacoes">
+        <header>
+            <div>
+                <span>Alteracoes</span>
+                <h2>Notificacoes da equipa</h2>
+            </div>
+            <button class="dash-icon-btn" id="close-notifications" type="button" aria-label="Fechar notificacoes">
+                <i data-lucide="x"></i>
+            </button>
+        </header>
+        <div class="panel-summary" id="panel-summary">0 alteracoes encontradas</div>
+        <div class="panel-list" id="panel-list"></div>
+    </aside>
+    <div class="panel-backdrop" id="panel-backdrop"></div>
+
+    <script src="admin-dashboard.js"></script>
+</body>
+</html>

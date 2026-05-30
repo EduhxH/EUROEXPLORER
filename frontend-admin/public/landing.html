@@ -25,7 +25,7 @@
   --c-text-dim:  #77858a;
   --c-text-mid:  #b7c2bd;
   --c-red:       #C0392B;
-  --c-accent-blue: #2563eb;
+  --c-blue-accent: #2563eb;
   --c-paper:     #ebe4d4;
   --c-paper-ink: #18263f;
   --c-brass:     #b9914e;
@@ -1043,7 +1043,7 @@ input, select { font-family: inherit; }
   image-rendering: auto;
 }
 .pulse-dot {
-  background: var(--c-accent-blue);
+  background: var(--c-blue-accent);
   box-shadow: 0 0 12px rgba(37,99,235,0.34);
 }
 .user-card {
@@ -1084,7 +1084,7 @@ input, select { font-family: inherit; }
   background: rgba(238,242,239,0.12);
 }
 .prog-fill {
-  background: linear-gradient(90deg, var(--c-accent-blue), var(--c-brass));
+  background: linear-gradient(90deg, var(--c-blue-accent), var(--c-brass));
 }
 .prog-fill::after {
   background: var(--c-brass);
@@ -1204,7 +1204,7 @@ input, select { font-family: inherit; }
   height: 5px;
   transform: translateY(-50%);
   border-radius: 50%;
-  background: var(--c-accent-blue);
+  background: var(--c-blue-accent);
   box-shadow: 0 0 18px rgba(37,99,235,0.68);
 }
 .hdr-sub {
@@ -3625,7 +3625,7 @@ input, select { font-family: inherit; }
 }
 .avatar-blue { background: #1d8ae5; }
 .avatar-purple { background: #aa53d8; }
-.avatar-cobalt { background: #2563eb; }
+.avatar-eu-blue { background: #2563eb; }
 .avatar-slate {
   background: linear-gradient(135deg, #4b5563, #111827);
   font-size: 1.1rem;
@@ -3964,7 +3964,7 @@ input, select { font-family: inherit; }
         <p>Colaboracao na implementacao, recolha de conteudos e organizacao da apresentacao academica.</p>
       </article>
       <article class="team-card">
-        <div class="team-avatar avatar-cobalt">VK</div>
+        <div class="team-avatar avatar-eu-blue">VK</div>
         <span class="team-pill">Conteudo</span>
         <h3>Valeri Kravchenko</h3>
         <strong>Programacao, dados e verificacao</strong>
@@ -4455,7 +4455,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  
+
   anime.set(t, { opacity: 0, translateX: '-20px' });
   anime({
     targets: t,
@@ -4464,7 +4464,7 @@ function showToast(msg) {
     duration: 380,
     easing: 'easeOutExpo'
   });
-  
+
   setTimeout(() => {
     anime({
       targets: t,
@@ -4531,7 +4531,7 @@ function createStampSVG(country, dateStr, size=88) {
   const ink = '#172b5f';
   const paleInk = '#4c638d';
   const stampFlag = flagUrl(country.code);
-  
+
   return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(${rot}deg);">
     <defs>
       <filter id="ink-${uid}" x="-20%" y="-20%" width="140%" height="140%">
@@ -5194,12 +5194,12 @@ function animateStamper(callback) {
 function openCountryModal(country) {
   currentCountry = country;
   const modal = document.getElementById('country-modal');
-  
+
   // Set header content
   setFlagImage(document.getElementById('modal-flag'), country.code, 160);
   document.getElementById('modal-country-name').textContent = country.name;
   document.getElementById('modal-country-capital').textContent = `Capital: ${country.capital}`;
-  
+
   // Load cinematic country image, with the existing video kept as a fallback.
   const imageMeta = COUNTRY_IMAGES[country.code] || {};
   const photo = document.getElementById('country-photo');
@@ -5240,7 +5240,7 @@ function openCountryModal(country) {
     };
     photo.src = imageMeta.url || FALLBACK_COUNTRY_IMAGE;
   }
-  
+
   // Fill stats
   document.getElementById('modal-stats').innerHTML = [
     {label:'Capital',value:country.capital},
@@ -5250,13 +5250,13 @@ function openCountryModal(country) {
     {label:'Língua',value:country.language},
     {label:'Na UE desde',value:country.eu_since},
   ].map(s=>`<div class="stat-item"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>`).join('');
-  
+
   // Fill description
   document.getElementById('modal-desc').textContent = country.description;
-  
+
   // Fill curiosities
   document.getElementById('modal-curis').innerHTML = country.curiosities.map(c=>`<div class="curi-item">${c}</div>`).join('');
-  
+
   // Update stamp button state
   const stampBtn = document.getElementById('stamp-btn');
   if (visitedCountries.has(country.code)) {
@@ -5266,10 +5266,10 @@ function openCountryModal(country) {
     stampBtn.textContent = 'Carimbar Passaporte';
     stampBtn.disabled = false;
   }
-  
+
   document.getElementById('stamp-overlay').innerHTML = '';
   modal.classList.add('active');
-  
+
   // Animate modal entrance
   anime.set(modal, { opacity: 0 });
   anime.set('.country-card', { opacity: 0, translateY: 18, scale: 0.985 });
@@ -5610,7 +5610,7 @@ function featureRef(code) {
 function showCountryTooltip(country, x, y) {
   const tip = document.getElementById('country-tooltip');
   if (!tip) return;
-  
+
   const visited = visitedCountries.has(country.code);
   if (activeTooltipCode !== country.code) {
     tip.innerHTML = `
@@ -5785,7 +5785,7 @@ function clearPendingTouchOpen() {
 
 function setupCountryLayers() {
   if (!map || !mapLoaded) return;
-  
+
   if (!map.getSource(COUNTRY_SOURCE)) {
     map.addSource(COUNTRY_SOURCE, {
       type: 'vector',
