@@ -240,6 +240,10 @@
     gap: 20px;
 }
 
+.admin-login-form[hidden] {
+    display: none !important;
+}
+
 .admin-login-input {
     display: grid;
     gap: 8px;
