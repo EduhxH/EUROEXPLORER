@@ -66,6 +66,7 @@ users_collection = db['users']
 countries_collection = db['countries']
 commits_collection = db['commits']
 reminders_collection = db['reminders']
+password_resets_collection = db['password_resets']
 
 def _configured_seed_users():
     raw_users = os.getenv("SEED_USERS_JSON")
@@ -90,6 +91,9 @@ def init_mongo():
     commits_collection.create_index([("author_id", ASCENDING), ("created_at", DESCENDING)])
     reminders_collection.create_index([("created_by", ASCENDING), ("due_at", ASCENDING)])
     reminders_collection.create_index([("assigned_to", ASCENDING), ("completed", ASCENDING)])
+    password_resets_collection.create_index([("username", ASCENDING), ("created_at", DESCENDING)])
+    password_resets_collection.create_index([("status", ASCENDING), ("created_at", DESCENDING)])
+    password_resets_collection.create_index("expires_at", expireAfterSeconds=0)
     users_collection.create_index([("last_seen", DESCENDING)])
 
     if users_collection.count_documents({}) == 0:

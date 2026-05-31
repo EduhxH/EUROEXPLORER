@@ -85,6 +85,20 @@ type Reminder = {
   updated_at: string;
 };
 
+type PasswordResetRequest = {
+  _id: string;
+  username: string;
+  user_id: string;
+  user_role?: string | null;
+  code?: string | null;
+  status: string;
+  attempts: number;
+  created_at: string;
+  updated_at?: string | null;
+  expires_at?: string | null;
+  used_at?: string | null;
+};
+
 type TimeTrackerState = {
   state: TrackerStateName;
   elapsed_ms: number;
@@ -114,6 +128,17 @@ type ChartPoint = {
   height: string;
 };
 
+type DashboardNotification = {
+  id: string;
+  user: string;
+  message: string;
+  area: string;
+  status: string;
+  date: string;
+  details: string[];
+  kind: 'commit' | 'password-reset';
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 const LANDING_PAGE_URL = import.meta.env.VITE_LANDING_PAGE_URL ?? '/landing.html';
 const SESSION_FLAG = 'cookie-session';
@@ -138,6 +163,24 @@ async function readJson<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const detail = data?.detail || data?.message;
+    if (response.status === 401 && detail === 'Invalid credentials') {
+      throw new Error('Credenciais invalidas.');
+    }
+    if (response.status === 403 && detail === 'Origin not allowed') {
+      throw new Error('Este website nao esta autorizado pela API.');
+    }
+    if (response.status === 429) {
+      throw new Error('Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+    }
+    if (detail === 'Reset code must have 6 digits') {
+      throw new Error('O codigo deve ter 6 digitos.');
+    }
+    if (detail === 'Invalid or expired reset code') {
+      throw new Error('Codigo invalido ou expirado.');
+    }
+    if (detail === 'Password must be at least 10 characters') {
+      throw new Error('A nova senha deve ter pelo menos 10 caracteres.');
+    }
     throw new Error(detail || `Pedido falhou com estado ${response.status}`);
   }
   return data as T;
@@ -204,7 +247,7 @@ function describeDiff(diff: CommitDiff) {
   return details.length ? details : ['Diff recebido sem campos classificados'];
 }
 
-function toNotification(commit: Commit) {
+function toNotification(commit: Commit): DashboardNotification {
   return {
     id: commit._id,
     user: commit.author_name,
@@ -213,6 +256,30 @@ function toNotification(commit: Commit) {
     status: commit.status,
     date: commit.created_at,
     details: describeDiff(commit.diff ?? {}),
+    kind: 'commit',
+  };
+}
+
+function toPasswordResetNotification(reset: PasswordResetRequest): DashboardNotification {
+  const details = reset.status === 'PENDING'
+    ? [
+        `Codigo: ${reset.code || 'indisponivel'}`,
+        reset.expires_at ? `Expira em ${formatDate(reset.expires_at)}` : 'Codigo sem validade definida',
+      ]
+    : [
+        reset.used_at ? `Usado em ${formatDate(reset.used_at)}` : `Estado: ${reset.status}`,
+        reset.expires_at ? `Validade: ${formatDate(reset.expires_at)}` : 'Sem validade registada',
+      ];
+
+  return {
+    id: `reset-${reset._id}`,
+    user: reset.username,
+    message: 'Pedido de redefinicao de senha',
+    area: reset.user_role || 'Conta administrativa',
+    status: reset.status,
+    date: reset.created_at,
+    details,
+    kind: 'password-reset',
   };
 }
 
@@ -263,6 +330,7 @@ function App() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [passwordResets, setPasswordResets] = useState<PasswordResetRequest[]>([]);
   const [timeTracker, setTimeTracker] = useState<TimeTrackerState>({ state: 'stopped', elapsed_ms: 0 });
   const [trackerTick, setTrackerTick] = useState(Date.now());
   const [activeView, setActiveView] = useState<ViewKey>('dashboard');
@@ -276,6 +344,13 @@ function App() {
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [loginMode, setLoginMode] = useState<'login' | 'reset'>('login');
+  const [resetName, setResetName] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -314,6 +389,11 @@ function App() {
     setReminders(await readJson<Reminder[]>(await fetch(`${API_BASE}/api/reminders`, { credentials: 'include', headers: authHeaders(authToken) })));
   };
 
+  const fetchPasswordResets = async (authToken = token) => {
+    if (!authToken) return;
+    setPasswordResets(await readJson<PasswordResetRequest[]>(await fetch(`${API_BASE}/api/admin/password-resets`, { credentials: 'include', headers: authHeaders(authToken) })));
+  };
+
   const fetchTracker = async (authToken = token) => {
     if (!authToken) return;
     const tracker = await readJson<TimeTrackerState>(await fetch(`${API_BASE}/api/time-tracker`, { credentials: 'include', headers: authHeaders(authToken) }));
@@ -322,7 +402,7 @@ function App() {
 
   const refreshAll = async (authToken = token) => {
     if (!authToken) return;
-    await Promise.all([fetchCommits(authToken), fetchUsers(authToken), fetchReminders(authToken), fetchTracker(authToken)]);
+    await Promise.all([fetchCommits(authToken), fetchUsers(authToken), fetchReminders(authToken), fetchPasswordResets(authToken), fetchTracker(authToken)]);
   };
 
   useEffect(() => {
@@ -407,7 +487,10 @@ function App() {
   }, [settingsOpen, selectedUser]);
 
   const pendingCommits = useMemo(() => commits.filter((commit) => commit.status === 'PENDING'), [commits]);
-  const notifications = useMemo(() => commits.map(toNotification), [commits]);
+  const notifications = useMemo(() => {
+    return [...passwordResets.map(toPasswordResetNotification), ...commits.map(toNotification)]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [commits, passwordResets]);
 
   const stats = useMemo<Stats>(
     () => ({
@@ -469,6 +552,99 @@ function App() {
     }
   };
 
+  const openResetMode = () => {
+    setResetName(loginName.trim());
+    setResetCode('');
+    setResetPassword('');
+    setResetMessage('');
+    setResetSuccess(false);
+    setError('');
+    setLoginMode('reset');
+  };
+
+  const openLoginMode = () => {
+    setLoginName(resetName.trim());
+    setError('');
+    setResetMessage('');
+    setResetSuccess(false);
+    setLoginMode('login');
+  };
+
+  const handleResetRequest = async () => {
+    const username = resetName.trim();
+    if (!username) {
+      setResetSuccess(false);
+      setResetMessage('Preencha o utilizador para pedir o codigo.');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetMessage('');
+    setResetSuccess(false);
+    try {
+      await readJson<{ message: string }>(
+        await fetch(`${API_BASE}/api/auth/password-reset/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username }),
+        }),
+      );
+      setResetSuccess(true);
+      setResetMessage('Codigo enviado para as notificacoes dos super admins.');
+    } catch (err) {
+      setResetSuccess(false);
+      setResetMessage(err instanceof Error ? err.message : 'Nao foi possivel pedir o codigo.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleResetConfirm = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const username = resetName.trim();
+    const code = resetCode.trim();
+
+    if (!username || !code || !resetPassword) {
+      setResetSuccess(false);
+      setResetMessage('Preencha utilizador, codigo e nova senha.');
+      return;
+    }
+    if (!/^\d{6}$/.test(code)) {
+      setResetSuccess(false);
+      setResetMessage('O codigo deve ter 6 digitos.');
+      return;
+    }
+    if (resetPassword.length < 10) {
+      setResetSuccess(false);
+      setResetMessage('A nova senha deve ter pelo menos 10 caracteres.');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetMessage('');
+    setResetSuccess(false);
+    try {
+      await readJson<{ message: string }>(
+        await fetch(`${API_BASE}/api/auth/password-reset/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, code, password: resetPassword }),
+        }),
+      );
+      setLoginName(username);
+      setLoginPassword('');
+      setResetCode('');
+      setResetPassword('');
+      setLoginMode('login');
+      setError('Senha redefinida. Entre com a nova senha.');
+    } catch (err) {
+      setResetSuccess(false);
+      setResetMessage(err instanceof Error ? err.message : 'Nao foi possivel redefinir a senha.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch(`${API_BASE}/api/auth/logout`, { credentials: 'include', method: 'POST' });
@@ -482,6 +658,7 @@ function App() {
     setCommits([]);
     setUsers([]);
     setReminders([]);
+    setPasswordResets([]);
     setActiveEditor(null);
     setStatusFilter('ALL');
     setNotificationsOpen(false);
@@ -555,30 +732,61 @@ function App() {
             </div>
 
             <div className="login-heading">
-              <h1 id="login-title">Login de administradores</h1>
-              <p>Inicie sessão com uma conta de administrador.</p>
+              <h1 id="login-title">{loginMode === 'reset' ? 'Redefinir senha' : 'Login de administradores'}</h1>
+              <p className="login-mode-copy">{loginMode === 'reset' ? 'Peca um codigo aos super admins e crie uma nova senha.' : 'Inicie sessao com uma conta de administrador.'}</p>
             </div>
 
-            {error && <div className="login-error" role="alert">{error}</div>}
+            {loginMode === 'login' && error && <div className="login-error" role="alert">{error}</div>}
 
-            <form className="login-form" onSubmit={handleLogin}>
-              <label className="login-input">
-                <span>Nome de utilizador</span>
-                <input autoComplete="username" onChange={(event) => setLoginName(event.target.value)} required type="text" value={loginName} />
-              </label>
+            {loginMode === 'login' ? (
+              <form className="login-form" onSubmit={handleLogin}>
+                <label className="login-input">
+                  <span>Nome de utilizador</span>
+                  <input autoComplete="username" onChange={(event) => setLoginName(event.target.value)} required type="text" value={loginName} />
+                </label>
 
-              <label className="login-input password-field">
-                <span>Palavra-passe</span>
-                <input autoComplete="current-password" onChange={(event) => setLoginPassword(event.target.value)} required type={showPassword ? 'text' : 'password'} value={loginPassword} />
-                <button aria-label={showPassword ? 'Esconder password' : 'Mostrar password'} onClick={() => setShowPassword((current) => !current)} type="button">
-                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                <label className="login-input password-field">
+                  <span>Palavra-passe</span>
+                  <input autoComplete="current-password" onChange={(event) => setLoginPassword(event.target.value)} required type={showPassword ? 'text' : 'password'} value={loginPassword} />
+                  <button aria-label={showPassword ? 'Esconder password' : 'Mostrar password'} onClick={() => setShowPassword((current) => !current)} type="button">
+                    {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                  </button>
+                </label>
+
+                <button className="login-submit" disabled={loginLoading} onMouseEnter={(event) => handlePrimaryHover(event.currentTarget, true)} onMouseLeave={(event) => handlePrimaryHover(event.currentTarget, false)} type="submit">
+                  {loginLoading ? 'A validar acesso' : 'Entrar no painel'}
                 </button>
-              </label>
+                <button className="login-text-action login-option" onClick={openResetMode} type="button">Redefinir senha</button>
+              </form>
+            ) : (
+              <form className="login-form" onSubmit={handleResetConfirm}>
+                {resetMessage && <div className={resetSuccess ? 'login-error reset-success' : 'login-error'} role="alert">{resetMessage}</div>}
 
-              <button className="login-submit" disabled={loginLoading} onMouseEnter={(event) => handlePrimaryHover(event.currentTarget, true)} onMouseLeave={(event) => handlePrimaryHover(event.currentTarget, false)} type="submit">
-                {loginLoading ? 'A validar acesso' : 'Entrar no painel'}
-              </button>
-            </form>
+                <label className="login-input">
+                  <span>Nome de utilizador</span>
+                  <input autoComplete="username" onChange={(event) => setResetName(event.target.value)} required type="text" value={resetName} />
+                </label>
+
+                <button className="login-secondary login-option" disabled={resetLoading} onClick={handleResetRequest} type="button">
+                  {resetLoading ? 'A enviar codigo' : 'Pedir codigo aos super admins'}
+                </button>
+
+                <label className="login-input">
+                  <span>Codigo de 6 digitos</span>
+                  <input autoComplete="one-time-code" inputMode="numeric" maxLength={6} onChange={(event) => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))} required type="text" value={resetCode} />
+                </label>
+
+                <label className="login-input">
+                  <span>Nova senha</span>
+                  <input autoComplete="new-password" onChange={(event) => setResetPassword(event.target.value)} required type="password" value={resetPassword} />
+                </label>
+
+                <button className="login-submit" disabled={resetLoading} onMouseEnter={(event) => handlePrimaryHover(event.currentTarget, true)} onMouseLeave={(event) => handlePrimaryHover(event.currentTarget, false)} type="submit">
+                  {resetLoading ? 'A redefinir senha' : 'Redefinir senha'}
+                </button>
+                <button className="login-text-action login-option" onClick={openLoginMode} type="button">Voltar ao login</button>
+              </form>
+            )}
           </section>
         </section>
       </main>
@@ -824,7 +1032,7 @@ function DashboardView({
 }: {
   chartData: ChartPoint[];
   currentElapsed: number;
-  notifications: ReturnType<typeof toNotification>[];
+  notifications: DashboardNotification[];
   onNotificationsOpen: () => void;
   onReminderOpen: () => void;
   onTrackerAction: (action: 'start' | 'resume' | 'pause' | 'stop') => void;
@@ -906,7 +1114,7 @@ function ReminderQueueCard({ onOpen, reminders }: { onOpen: () => void; reminder
   );
 }
 
-function NotificationsCard({ notifications, onOpen }: { notifications: ReturnType<typeof toNotification>[]; onOpen: () => void }) {
+function NotificationsCard({ notifications, onOpen }: { notifications: DashboardNotification[]; onOpen: () => void }) {
   return (
     <article className="dash-card project-card notification-menu-card">
       <div className="card-title-row">
@@ -1009,7 +1217,7 @@ function TimeTracker({
   );
 }
 
-function NotificationsView({ commits, notifications }: { commits: Commit[]; notifications: ReturnType<typeof toNotification>[] }) {
+function NotificationsView({ commits, notifications }: { commits: Commit[]; notifications: DashboardNotification[] }) {
   return (
     <section className="view-card">
       <div className="card-title-row">
@@ -1373,8 +1581,8 @@ function CommitReviewList({
   );
 }
 
-function NotificationsPanel({ notifications, onClose }: { notifications: ReturnType<typeof toNotification>[]; onClose: () => void }) {
-  const grouped = notifications.reduce<Record<string, ReturnType<typeof toNotification>[]>>((acc, item) => {
+function NotificationsPanel({ notifications, onClose }: { notifications: DashboardNotification[]; onClose: () => void }) {
+  const grouped = notifications.reduce<Record<string, DashboardNotification[]>>((acc, item) => {
     acc[item.user] = [...(acc[item.user] ?? []), item];
     return acc;
   }, {});
@@ -1552,7 +1760,14 @@ function EmptyInline({ text }: { text: string }) {
 
 function StatusPill({ status }: { status: string }) {
   const normalized = status as CommitStatus;
-  const label = statusCopy[normalized] ?? status;
+  const resetStatusCopy: Record<string, string> = {
+    PENDING: 'Pendente',
+    USED: 'Usado',
+    EXPIRED: 'Expirado',
+    CANCELLED: 'Cancelado',
+    LOCKED: 'Bloqueado',
+  };
+  const label = statusCopy[normalized] ?? resetStatusCopy[status] ?? status;
   return <span className={`status-pill ${String(status).toLowerCase()}`}>{label}</span>;
 }
 

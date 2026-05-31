@@ -20,7 +20,14 @@ import jwt
 import bcrypt
 from bson.objectid import ObjectId
 
-from mongo_db import init_mongo, users_collection, countries_collection, commits_collection, reminders_collection
+from mongo_db import (
+    init_mongo,
+    users_collection,
+    countries_collection,
+    commits_collection,
+    reminders_collection,
+    password_resets_collection,
+)
 
 app = FastAPI(title="Europa Explorer CMS API - MongoDB")
 
@@ -38,12 +45,15 @@ DEFAULT_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://euroexplorer.vercel.app",
+    "https://www.euroexplorer.vercel.app",
 ]
-ALLOWED_ORIGINS = [
+CONFIGURED_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.getenv("CORS_ALLOWED_ORIGINS", ",".join(DEFAULT_ALLOWED_ORIGINS)).split(",")
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+ALLOWED_ORIGINS = sorted(set(DEFAULT_ALLOWED_ORIGINS + CONFIGURED_ALLOWED_ORIGINS))
 
 app.add_middleware(
     CORSMiddleware,
@@ -76,11 +86,21 @@ COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 LOGIN_WINDOW_SECONDS = int(os.getenv("LOGIN_WINDOW_SECONDS", "900"))
 LOGIN_MAX_ATTEMPTS = int(os.getenv("LOGIN_MAX_ATTEMPTS", "5"))
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(5 * 1024 * 1024)))
+PASSWORD_RESET_CODE_SECONDS = int(os.getenv("PASSWORD_RESET_CODE_SECONDS", "1800"))
+PASSWORD_RESET_MAX_ATTEMPTS = int(os.getenv("PASSWORD_RESET_MAX_ATTEMPTS", "5"))
 
 _login_attempts = defaultdict(deque)
 
 class LoginRequest(BaseModel):
     username: str
+    password: str
+
+class PasswordResetStart(BaseModel):
+    username: str
+
+class PasswordResetConfirm(BaseModel):
+    username: str
+    code: str
     password: str
 
 class CommitProposal(BaseModel):
@@ -338,6 +358,17 @@ def clear_failed_logins(request: Request, username: str):
     _login_attempts.pop(f"{client_host}:{username.lower()}", None)
 
 
+def clear_failed_logins_for_username(username: str):
+    suffix = f":{username.lower()}"
+    for key in list(_login_attempts.keys()):
+        if key.endswith(suffix):
+            _login_attempts.pop(key, None)
+
+
+def create_password_reset_code() -> str:
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
 def create_access_token(user_doc: dict) -> str:
     now = datetime.datetime.utcnow()
     payload = {
@@ -470,6 +501,31 @@ def serialize_reminder(reminder: dict):
         "completed_at": serialize_datetime(reminder.get("completed_at")),
     }
 
+def password_reset_status(reset: dict) -> str:
+    status_value = reset.get("status", "PENDING")
+    expires_at = reset.get("expires_at")
+    if status_value == "PENDING" and isinstance(expires_at, datetime.datetime):
+        if expires_at <= datetime.datetime.utcnow():
+            return "EXPIRED"
+    return status_value
+
+def serialize_password_reset(reset: dict):
+    status_value = password_reset_status(reset)
+    code = reset.get("code") if status_value == "PENDING" else None
+    return {
+        "_id": str(reset["_id"]),
+        "username": reset.get("username"),
+        "user_id": reset.get("user_id"),
+        "user_role": reset.get("user_role"),
+        "code": code,
+        "status": status_value,
+        "attempts": reset.get("attempts", 0),
+        "created_at": serialize_datetime(reset.get("created_at")),
+        "updated_at": serialize_datetime(reset.get("updated_at")),
+        "expires_at": serialize_datetime(reset.get("expires_at")),
+        "used_at": serialize_datetime(reset.get("used_at")),
+    }
+
 def time_tracker_response(user_doc: dict):
     tracker = user_doc.get("time_tracker") or {}
     state = tracker.get("state", "stopped")
@@ -549,6 +605,90 @@ def login(req: LoginRequest, response: Response, request: Request):
     refreshed_user = users_collection.find_one({"_id": user["_id"]})
     return {"user": public_user(refreshed_user)}
 
+@app.post("/api/auth/password-reset/request")
+def request_password_reset(payload: PasswordResetStart):
+    username = sanitize_plain_text(payload.username, max_length=80)
+    if not username:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+
+    user_doc = users_collection.find_one({"username": username})
+    if user_doc:
+        now = datetime.datetime.utcnow()
+        password_resets_collection.update_many(
+            {"user_id": str(user_doc["_id"]), "status": "PENDING"},
+            {"$set": {"status": "CANCELLED", "updated_at": now}},
+        )
+        password_resets_collection.insert_one({
+            "username": user_doc.get("username"),
+            "user_id": str(user_doc["_id"]),
+            "user_role": user_doc.get("role"),
+            "code": create_password_reset_code(),
+            "status": "PENDING",
+            "attempts": 0,
+            "created_at": now,
+            "updated_at": now,
+            "expires_at": now + datetime.timedelta(seconds=PASSWORD_RESET_CODE_SECONDS),
+            "used_at": None,
+        })
+
+    return {"message": "Se a conta existir, um codigo de redefinicao foi enviado aos super admins."}
+
+@app.post("/api/auth/password-reset/confirm")
+def confirm_password_reset(payload: PasswordResetConfirm):
+    username = sanitize_plain_text(payload.username, max_length=80)
+    code = sanitize_plain_text(payload.code, max_length=32)
+    password = payload.password or ""
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+    if not re.fullmatch(r"\d{6}", code):
+        raise HTTPException(status_code=400, detail="Reset code must have 6 digits")
+    if len(password) < 10:
+        raise HTTPException(status_code=400, detail="Password must be at least 10 characters")
+
+    user_doc = users_collection.find_one({"username": username})
+    if not user_doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+
+    now = datetime.datetime.utcnow()
+    reset = password_resets_collection.find_one(
+        {"user_id": str(user_doc["_id"]), "status": "PENDING"},
+        sort=[("created_at", -1)],
+    )
+    if not reset:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+    if reset.get("expires_at") and reset["expires_at"] <= now:
+        password_resets_collection.update_one(
+            {"_id": reset["_id"]},
+            {"$set": {"status": "EXPIRED", "updated_at": now}},
+        )
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+    if int(reset.get("attempts", 0) or 0) >= PASSWORD_RESET_MAX_ATTEMPTS:
+        password_resets_collection.update_one(
+            {"_id": reset["_id"]},
+            {"$set": {"status": "LOCKED", "updated_at": now}},
+        )
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+    if reset.get("code") != code:
+        attempts = int(reset.get("attempts", 0) or 0) + 1
+        update = {"attempts": attempts, "updated_at": now}
+        if attempts >= PASSWORD_RESET_MAX_ATTEMPTS:
+            update["status"] = "LOCKED"
+        password_resets_collection.update_one({"_id": reset["_id"]}, {"$set": update})
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    users_collection.update_one(
+        {"_id": user_doc["_id"]},
+        {"$set": {"password": hashed_password, "updated_at": now}},
+    )
+    password_resets_collection.update_one(
+        {"_id": reset["_id"]},
+        {"$set": {"status": "USED", "used_at": now, "updated_at": now}},
+    )
+    clear_failed_logins_for_username(username)
+    return {"message": "Password updated successfully"}
+
 @app.post("/api/auth/logout")
 def logout(response: Response):
     clear_auth_cookie(response)
@@ -618,6 +758,16 @@ async def update_avatar(file: UploadFile = File(...), user: dict = Depends(get_c
 def list_users(user: dict = Depends(require_super_admin)):
     users = list(users_collection.find().sort("username", 1))
     return [public_user(doc) for doc in users]
+
+@app.get("/api/admin/password-resets")
+def list_password_resets(user: dict = Depends(require_super_admin)):
+    now = datetime.datetime.utcnow()
+    password_resets_collection.update_many(
+        {"status": "PENDING", "expires_at": {"$lte": now}},
+        {"$set": {"status": "EXPIRED", "updated_at": now}},
+    )
+    resets = list(password_resets_collection.find().sort("created_at", -1).limit(50))
+    return [serialize_password_reset(reset) for reset in resets]
 
 @app.get("/api/admin/users/{user_id}")
 def user_details(user_id: str, user: dict = Depends(require_super_admin)):

@@ -323,6 +323,40 @@
     opacity: 0.68;
 }
 
+.admin-secondary-login,
+.admin-login-link {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid rgba(37, 99, 235, 0.14);
+    border-radius: 9px;
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.06);
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-secondary-login:hover,
+.admin-login-link:hover {
+    border-color: rgba(37, 99, 235, 0.28);
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.admin-login-link {
+    min-height: auto;
+    border: 0;
+    background: transparent;
+    color: #66726c;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.admin-login-link:hover {
+    background: transparent;
+    color: #2563eb;
+}
+
 #admin-login-error {
     display: none;
     margin: 0;
@@ -332,6 +366,23 @@
     border: 1px solid rgba(203, 57, 41, 0.2);
     color: #b52b1d;
     font-size: 0.88rem;
+}
+
+#admin-reset-message {
+    display: none;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 9px;
+    background: #fff0ed;
+    border: 1px solid rgba(203, 57, 41, 0.2);
+    color: #b52b1d;
+    font-size: 0.88rem;
+}
+
+#admin-reset-message.success {
+    background: #edf8f0;
+    border-color: rgba(33, 145, 72, 0.2);
+    color: #1f7a3d;
 }
 
 .admin-notification {

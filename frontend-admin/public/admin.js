@@ -33,6 +33,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'Servidor offline. Certifique-se de que o backend esta a correr.';
     }
 
+    async function loginErrorMessage(response) {
+        const data = await response.clone().json().catch(() => null);
+        const detail = data?.detail || data?.message;
+
+        if (response.status === 401) return 'Credenciais invalidas.';
+        if (response.status === 403 && detail === 'Origin not allowed') {
+            return 'Este website nao esta autorizado pela API.';
+        }
+        if (response.status === 429) return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+        if (detail === 'Reset code must have 6 digits') return 'O codigo deve ter 6 digitos.';
+        if (detail === 'Invalid or expired reset code') return 'Codigo invalido ou expirado.';
+        if (detail === 'Password must be at least 10 characters') return 'A nova senha deve ter pelo menos 10 caracteres.';
+        return detail || 'Nao foi possivel iniciar sessao.';
+    }
+
     const modalHtml = `
         <div id="admin-login-modal" aria-hidden="true">
             <div class="admin-login-shell" role="dialog" aria-modal="true" aria-labelledby="admin-login-title">
@@ -83,7 +98,36 @@ document.addEventListener('DOMContentLoaded', () => {
                             Entrar no painel
                         </button>
 
+                        <button id="admin-open-reset" class="admin-login-link" type="button">Redefinir senha</button>
                         <p id="admin-login-error" role="alert">Credenciais invalidas. Tente novamente.</p>
+                    </form>
+
+                    <form id="admin-reset-form" class="admin-login-form admin-reset-form" hidden>
+                        <label class="admin-login-input">
+                            <span>Utilizador</span>
+                            <input type="text" id="admin-reset-username" autocomplete="username">
+                        </label>
+
+                        <button id="admin-request-reset-code" class="admin-secondary-login" type="button">
+                            Pedir codigo aos super admins
+                        </button>
+
+                        <label class="admin-login-input">
+                            <span>Codigo de 6 digitos</span>
+                            <input type="text" id="admin-reset-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+                        </label>
+
+                        <label class="admin-login-input">
+                            <span>Nova palavra-passe</span>
+                            <input type="password" id="admin-reset-password" autocomplete="new-password">
+                        </label>
+
+                        <button id="admin-submit-reset" class="admin-primary-login" type="submit">
+                            Redefinir senha
+                        </button>
+
+                        <button id="admin-back-login" class="admin-login-link" type="button">Voltar ao login</button>
+                        <p id="admin-reset-message" role="alert"></p>
                     </form>
                 </section>
             </div>
@@ -142,6 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const errEl = document.getElementById('admin-login-error');
     const cancelLoginButton = document.getElementById('admin-cancel-login');
     const togglePasswordButton = document.getElementById('admin-toggle-password');
+    const resetForm = document.getElementById('admin-reset-form');
+    const resetUsernameInput = document.getElementById('admin-reset-username');
+    const resetCodeInput = document.getElementById('admin-reset-code');
+    const resetPasswordInput = document.getElementById('admin-reset-password');
+    const requestResetCodeButton = document.getElementById('admin-request-reset-code');
+    const submitResetButton = document.getElementById('admin-submit-reset');
+    const resetMessage = document.getElementById('admin-reset-message');
+    const openResetButton = document.getElementById('admin-open-reset');
+    const backLoginButton = document.getElementById('admin-back-login');
 
     function runAnime(config) {
         if (window.anime) {
@@ -172,7 +225,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(() => undefined);
     }
 
+    function setLoginMode(mode) {
+        const isReset = mode === 'reset';
+        loginForm.hidden = isReset;
+        resetForm.hidden = !isReset;
+        errEl.style.display = 'none';
+        resetMessage.style.display = 'none';
+        resetMessage.classList.remove('success');
+
+        const kicker = loginModal.querySelector('.admin-login-kicker');
+        const title = document.getElementById('admin-login-title');
+        const copy = loginModal.querySelector('.admin-login-copy p');
+        if (kicker) kicker.textContent = isReset ? 'Redefinicao segura' : 'Acesso reservado';
+        if (title) title.textContent = isReset ? 'Redefinir senha' : 'Login de administradores';
+        if (copy) {
+            copy.textContent = isReset
+                ? 'Peça um codigo aos super admins, introduza os 6 digitos recebidos e defina uma nova senha.'
+                : 'Entre com a sua conta para rever alteracoes, gerir propostas e acompanhar notificacoes.';
+        }
+
+        window.setTimeout(() => (isReset ? resetUsernameInput : usernameInput).focus(), 120);
+    }
+
     function openLoginModal() {
+        setLoginMode('login');
         loginModal.classList.add('active');
         loginModal.setAttribute('aria-hidden', 'false');
         errEl.style.display = 'none';
@@ -285,6 +361,100 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    openResetButton.addEventListener('click', () => {
+        resetUsernameInput.value = usernameInput.value.trim();
+        setLoginMode('reset');
+    });
+
+    backLoginButton.addEventListener('click', () => {
+        usernameInput.value = resetUsernameInput.value.trim();
+        setLoginMode('login');
+    });
+
+    resetCodeInput.addEventListener('input', () => {
+        resetCodeInput.value = resetCodeInput.value.replace(/\D/g, '').slice(0, 6);
+    });
+
+    function showResetMessage(message, isSuccess = false) {
+        resetMessage.textContent = message;
+        resetMessage.classList.toggle('success', isSuccess);
+        resetMessage.style.display = 'block';
+    }
+
+    requestResetCodeButton.addEventListener('click', async () => {
+        const username = resetUsernameInput.value.trim();
+        if (!username) {
+            showResetMessage('Preencha o utilizador para pedir o codigo.');
+            return;
+        }
+
+        requestResetCodeButton.disabled = true;
+        requestResetCodeButton.textContent = 'A enviar...';
+        try {
+            const res = await apiFetch('/api/auth/password-reset/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            if (!res.ok) {
+                showResetMessage(await loginErrorMessage(res));
+                return;
+            }
+            showResetMessage('Codigo enviado para as notificacoes dos super admins.', true);
+        } catch (err) {
+            showResetMessage(adminApiErrorMessage(err));
+        } finally {
+            requestResetCodeButton.disabled = false;
+            requestResetCodeButton.textContent = 'Pedir codigo aos super admins';
+        }
+    });
+
+    resetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = resetUsernameInput.value.trim();
+        const code = resetCodeInput.value.trim();
+        const password = resetPasswordInput.value;
+
+        if (!username || !code || !password) {
+            showResetMessage('Preencha utilizador, codigo e nova senha.');
+            return;
+        }
+        if (!/^\d{6}$/.test(code)) {
+            showResetMessage('O codigo deve ter 6 digitos.');
+            return;
+        }
+        if (password.length < 10) {
+            showResetMessage('A nova senha deve ter pelo menos 10 caracteres.');
+            return;
+        }
+
+        submitResetButton.disabled = true;
+        submitResetButton.textContent = 'A redefinir...';
+        try {
+            const res = await apiFetch('/api/auth/password-reset/confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, code, password })
+            });
+            if (!res.ok) {
+                showResetMessage(await loginErrorMessage(res));
+                return;
+            }
+            usernameInput.value = username;
+            passwordInput.value = '';
+            resetCodeInput.value = '';
+            resetPasswordInput.value = '';
+            setLoginMode('login');
+            errEl.textContent = 'Senha redefinida. Entre com a nova senha.';
+            errEl.style.display = 'block';
+        } catch (err) {
+            showResetMessage(adminApiErrorMessage(err));
+        } finally {
+            submitResetButton.disabled = false;
+            submitResetButton.textContent = 'Redefinir senha';
+        }
+    });
+
     togglePasswordButton.addEventListener('click', () => {
         const isPassword = passwordInput.type === 'password';
         passwordInput.type = isPassword ? 'text' : 'password';
@@ -336,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!res.ok) {
-                errEl.textContent = 'Credenciais invalidas.';
+                errEl.textContent = await loginErrorMessage(res);
                 errEl.style.display = 'block';
                 return;
             }
