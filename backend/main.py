@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import jwt
 import bcrypt
+from bson.binary import Binary
 from bson.objectid import ObjectId
 
 from mongo_db import (
@@ -421,7 +422,7 @@ def detect_image_mime(data: bytes) -> Optional[str]:
     return None
 
 
-async def save_image_upload(file: UploadFile, subdir: str = "") -> str:
+async def read_valid_image_upload(file: UploadFile) -> tuple[bytes, str]:
     raw = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(raw) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="File is too large")
@@ -434,6 +435,12 @@ async def save_image_upload(file: UploadFile, subdir: str = "") -> str:
         raise HTTPException(status_code=400, detail="Only valid image uploads are allowed")
     if extension not in ALLOWED_IMAGE_EXTENSIONS or ALLOWED_IMAGE_EXTENSIONS[extension] != detected_mime:
         raise HTTPException(status_code=400, detail="Invalid image extension")
+
+    return raw, detected_mime
+
+
+async def save_image_upload(file: UploadFile, subdir: str = "") -> str:
+    raw, detected_mime = await read_valid_image_upload(file)
 
     directory = (UPLOAD_ROOT / subdir).resolve()
     if UPLOAD_ROOT not in directory.parents and directory != UPLOAD_ROOT:
@@ -459,6 +466,14 @@ def get_user_doc(user_id: str):
     except Exception:
         return None
 
+
+def public_avatar_url(user_doc: dict) -> Optional[str]:
+    if user_doc.get("avatar_data") and user_doc.get("avatar_mime"):
+        version = serialize_datetime(user_doc.get("avatar_updated_at") or user_doc.get("updated_at")) or ""
+        return f"/api/admin/users/{str(user_doc['_id'])}/avatar?v={version}"
+    return user_doc.get("avatar")
+
+
 def public_user(user_doc: dict):
     now = datetime.datetime.utcnow()
     last_seen = user_doc.get("last_seen")
@@ -475,7 +490,7 @@ def public_user(user_doc: dict):
         "email": user_doc.get("email"),
         "cargo": user_doc.get("cargo"),
         "role": user_doc.get("role"),
-        "avatar": user_doc.get("avatar"),
+        "avatar": public_avatar_url(user_doc),
         "last_seen": serialize_datetime(last_seen),
         "last_activity": serialize_datetime(latest_commit.get("created_at")) if latest_commit else None,
         "online": online,
@@ -747,10 +762,20 @@ async def update_avatar(file: UploadFile = File(...), user: dict = Depends(get_c
     if not user_doc:
         raise HTTPException(status_code=404, detail="User not found")
 
-    avatar_url = await save_image_upload(file, "profiles")
+    raw, mime = await read_valid_image_upload(file)
+    now = datetime.datetime.utcnow()
+    avatar_url = f"/api/admin/users/{str(user_doc['_id'])}/avatar?v={now.isoformat()}"
     users_collection.update_one(
         {"_id": user_doc["_id"]},
-        {"$set": {"avatar": avatar_url, "updated_at": datetime.datetime.utcnow()}}
+        {
+            "$set": {
+                "avatar": avatar_url,
+                "avatar_data": Binary(raw),
+                "avatar_mime": mime,
+                "avatar_updated_at": now,
+                "updated_at": now,
+            }
+        }
     )
     return public_user(users_collection.find_one({"_id": user_doc["_id"]}))
 
@@ -768,6 +793,18 @@ def list_password_resets(user: dict = Depends(require_super_admin)):
     )
     resets = list(password_resets_collection.find().sort("created_at", -1).limit(50))
     return [serialize_password_reset(reset) for reset in resets]
+
+@app.get("/api/admin/users/{user_id}/avatar")
+def get_user_avatar(user_id: str):
+    user_doc = get_user_doc(user_id)
+    if not user_doc or not user_doc.get("avatar_data") or not user_doc.get("avatar_mime"):
+        raise HTTPException(status_code=404, detail="Avatar not found")
+
+    return Response(
+        content=bytes(user_doc["avatar_data"]),
+        media_type=user_doc["avatar_mime"],
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 @app.get("/api/admin/users/{user_id}")
 def user_details(user_id: str, user: dict = Depends(require_super_admin)):

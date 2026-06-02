@@ -237,6 +237,17 @@ function avatarUrl(user?: AdminUser | null) {
   return `${API_BASE}${user.avatar}`;
 }
 
+function initials(value?: string | null) {
+  const parts = (value || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'EU';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function userInitials(user?: AdminUser | null) {
+  return initials(user?.username || user?.name || user?.email);
+}
+
 function describeDiff(diff: CommitDiff) {
   const details: string[] = [];
 
@@ -955,7 +966,35 @@ function viewSubtitle(view: ViewKey) {
 
 function Avatar({ user }: { user?: AdminUser | null }) {
   const src = avatarUrl(user);
-  return <span className="avatar"><img src={src || defaultUserIcon} alt="" /></span>;
+  const [imageFailed, setImageFailed] = useState(false);
+  const [defaultFailed, setDefaultFailed] = useState(false);
+  const imageSrc = src && !imageFailed ? src : defaultUserIcon;
+  const showImage = Boolean(imageSrc && !defaultFailed);
+
+  useEffect(() => {
+    setImageFailed(false);
+    setDefaultFailed(false);
+  }, [src]);
+
+  return (
+    <span className={showImage ? 'avatar has-image' : 'avatar avatar-fallback'}>
+      {showImage ? (
+        <img
+          src={imageSrc}
+          alt=""
+          onError={() => {
+            if (imageSrc === defaultUserIcon) {
+              setDefaultFailed(true);
+            } else {
+              setImageFailed(true);
+            }
+          }}
+        />
+      ) : (
+        <span aria-hidden="true">{userInitials(user)}</span>
+      )}
+    </span>
+  );
 }
 
 function Sidebar({
@@ -1562,7 +1601,16 @@ function CommitReviewList({
             {commit.status === 'PENDING' && (
               <div className="review-actions">
                 <button disabled={actionId === commit._id} onClick={() => onApprove(commit._id)} type="button"><CheckCircle2 size={17} />Aprovar</button>
-                <input onChange={(event) => setRejectNotes((current) => ({ ...current, [commit._id]: event.target.value }))} value={rejectNotes[commit._id] ?? ''} />
+                <label className="review-note-field">
+                  <span>Motivo da decisão</span>
+                  <textarea
+                    aria-label="Motivo da decisão"
+                    onChange={(event) => setRejectNotes((current) => ({ ...current, [commit._id]: event.target.value }))}
+                    placeholder="Escreva o motivo antes de aprovar ou rejeitar"
+                    rows={2}
+                    value={rejectNotes[commit._id] ?? ''}
+                  />
+                </label>
                 <button disabled={actionId === commit._id} onClick={() => onReject(commit._id)} type="button"><XCircle size={17} />Rejeitar</button>
               </div>
             )}

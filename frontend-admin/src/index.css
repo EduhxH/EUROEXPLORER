@@ -636,6 +636,18 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.avatar-fallback {
+  background: linear-gradient(145deg, #f8fbff, #dbeafe);
+  color: var(--eu-800);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.avatar-fallback > span {
+  line-height: 1;
 }
 
 .profile-chip strong,
@@ -1432,8 +1444,10 @@ a {
 .review-actions {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: auto minmax(260px, 1fr) auto;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 2px;
 }
 
 .review-actions button {
@@ -1455,15 +1469,47 @@ a {
   background: #e94b43;
 }
 
-.review-actions input {
+.review-note-field {
+  display: grid;
+  gap: 6px;
   min-width: 0;
-  min-height: 38px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  border: 1px solid rgba(37, 99, 235, 0.34);
+  border-radius: 12px;
+  background: #f3f7ff;
+  padding: 8px 10px 10px;
+  box-shadow: inset 0 0 0 1px rgba(139, 188, 255, 0.28);
+}
+
+.review-note-field span {
+  color: var(--eu-800);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.review-note-field textarea {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  resize: vertical;
+  border: 0;
   outline: none;
+  background: transparent;
+  color: var(--ink-950);
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.review-note-field textarea::placeholder {
+  color: var(--ink-500);
+}
+
+.review-note-field:focus-within {
+  border-color: var(--eu-700);
   background: var(--white);
-  padding: 0 12px;
-  font-size: 13px;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
 }
 
 .review-empty {
@@ -1744,8 +1790,7 @@ a {
 .filters-row input,
 .settings-form input,
 .settings-form select,
-.settings-form textarea,
-.review-actions input {
+.settings-form textarea {
   min-height: 42px;
   border: 1px solid var(--line);
   border-radius: 10px;
