@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         || document.querySelector('meta[name="europa-api-base"]')?.content
         || (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000' : '')
     ).replace(/\/+$/, '');
+    const DISMISSED_REJECTIONS_PREFIX = 'admin_dismissed_rejections';
 
     function apiUrl(path) {
         if (!API_BASE) {
@@ -215,6 +216,42 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('admin_user', JSON.stringify(user));
     }
 
+    function adminStorageId(user = getStoredAdminUser()) {
+        return String(user?.id || user?._id || user?.username || 'anonymous');
+    }
+
+    function dismissedRejectionsStorageKey(user = getStoredAdminUser()) {
+        return `${DISMISSED_REJECTIONS_PREFIX}:${adminStorageId(user)}`;
+    }
+
+    function rejectionDismissalId(commit) {
+        if (!commit) return '';
+        return String(commit._id || `${commit.country_id || 'unknown'}:${commit.created_at || ''}:${commit.rejection_note || ''}`);
+    }
+
+    function getDismissedRejectionIds() {
+        try {
+            const ids = JSON.parse(localStorage.getItem(dismissedRejectionsStorageKey()) || '[]');
+            return new Set(Array.isArray(ids) ? ids.map(String) : []);
+        } catch {
+            return new Set();
+        }
+    }
+
+    function rememberDismissedRejection(commitId) {
+        if (!commitId) return;
+        const next = Array.from(new Set([...getDismissedRejectionIds(), String(commitId)])).slice(-200);
+        localStorage.setItem(dismissedRejectionsStorageKey(), JSON.stringify(next));
+    }
+
+    function dismissCurrentRejectionNotice() {
+        const notification = document.getElementById('admin-notification');
+        if (!notification) return;
+        rememberDismissedRejection(notification.dataset.commitId);
+        notification.classList.remove('active');
+        delete notification.dataset.commitId;
+    }
+
     async function clearAdminSession() {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_user');
@@ -330,9 +367,10 @@ document.addEventListener('DOMContentLoaded', () => {
         globeObserver.observe(globeScreen, { attributes: true });
     }
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
         const authButton = e.target?.closest?.('.auth-login-btn');
         if (!authButton) return;
+        e.preventDefault();
 
         const user = getStoredAdminUser();
 
@@ -342,8 +380,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            clearAdminSession();
-            location.reload();
+            authButton.disabled = true;
+            authButton.textContent = 'A sair...';
+            await clearAdminSession();
+            window.location.reload();
             return;
         }
 
@@ -532,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelector('.admin-notif-close')?.addEventListener('click', () => {
-        document.getElementById('admin-notification')?.classList.remove('active');
+        dismissCurrentRejectionNotice();
     });
 
     function updateLoginButtonState() {
@@ -1859,10 +1899,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 const commits = await res.json();
-                const rejected = commits.find((c) => c.status === 'REJECTED' && c.rejection_note);
-                if (rejected) {
+                const dismissed = getDismissedRejectionIds();
+                const rejected = commits.find((c) => {
+                    const dismissalId = rejectionDismissalId(c);
+                    return c.status === 'REJECTED' && c.rejection_note && dismissalId && !dismissed.has(dismissalId);
+                });
+                const notification = document.getElementById('admin-notification');
+
+                if (rejected && notification) {
                     document.getElementById('admin-rejection-note').textContent = rejected.rejection_note;
-                    document.getElementById('admin-notification').classList.add('active');
+                    notification.dataset.commitId = rejectionDismissalId(rejected);
+                    notification.classList.add('active');
+                } else if (notification) {
+                    notification.classList.remove('active');
+                    delete notification.dataset.commitId;
                 }
             }
         } catch (err) {
