@@ -38,6 +38,7 @@ def startup():
     init_mongo()
 
 APP_ENV = os.getenv("APP_ENV", "development").lower()
+IS_PRODUCTION_RUNTIME = APP_ENV in {"prod", "production"} or os.getenv("RENDER", "").lower() == "true"
 BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_ROOT = (BASE_DIR / "uploads").resolve()
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
@@ -83,8 +84,10 @@ if not SECRET_KEY:
 ALGORITHM = "HS256"
 SESSION_SECONDS = int(os.getenv("SESSION_SECONDS", str(8 * 60 * 60)))
 AUTH_COOKIE_NAME = os.getenv("AUTH_COOKIE_NAME", "europa_session")
-COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true" if APP_ENV in {"prod", "production"} else "false").lower() == "true"
-COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true" if IS_PRODUCTION_RUNTIME else "false").lower() == "true"
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "none" if IS_PRODUCTION_RUNTIME else "lax").lower()
+if COOKIE_SAMESITE == "none" and IS_PRODUCTION_RUNTIME:
+    COOKIE_SECURE = True
 LOGIN_WINDOW_SECONDS = int(os.getenv("LOGIN_WINDOW_SECONDS", "900"))
 LOGIN_MAX_ATTEMPTS = int(os.getenv("LOGIN_MAX_ATTEMPTS", "5"))
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(5 * 1024 * 1024)))

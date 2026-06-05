@@ -262,6 +262,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(() => undefined);
     }
 
+    function handleExpiredAdminSession() {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        updateLoginButtonState();
+        closeEditor(false);
+        openLoginModal();
+        showEditorNotice('Sessao expirada. Inicie sessao novamente para guardar.');
+    }
+
     function setLoginMode(mode) {
         const isReset = mode === 'reset';
         loginForm.hidden = isReset;
@@ -1794,6 +1803,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeEditor(false);
             } else {
                 const data = await res.json().catch(() => ({}));
+                if (res.status === 401) {
+                    handleExpiredAdminSession();
+                    return;
+                }
                 showEditorNotice(data.detail || 'Erro ao submeter proposta.');
             }
         } catch (err) {
