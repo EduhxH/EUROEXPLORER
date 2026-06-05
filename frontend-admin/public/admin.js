@@ -734,7 +734,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getCurrentCountryId() {
-        return document.getElementById('modal-country-name')?.textContent?.trim() || '';
+        const countryModal = document.getElementById('country-modal');
+        return countryModal?.dataset.countryId?.trim()
+            || document.getElementById('modal-country-name')?.textContent?.trim()
+            || '';
     }
 
     function normalizeLabel(value) {

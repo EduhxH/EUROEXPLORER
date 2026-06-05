@@ -8,6 +8,7 @@ import json
 import os
 import re
 import secrets
+import unicodedata
 import uuid
 
 from fastapi import Cookie, Depends, FastAPI, File, Header, HTTPException, Request, Response, UploadFile, status
@@ -259,8 +260,9 @@ def sanitize_plain_text(value: str, max_length: int = 500) -> str:
 
 
 def sanitize_country_id(value: str) -> str:
-    value = sanitize_plain_text(value, max_length=32)
-    if not re.fullmatch(r"[A-Za-z0-9_-]+", value):
+    value = unicodedata.normalize("NFC", sanitize_plain_text(value, max_length=64))
+    value = re.sub(r"\s+", " ", value)
+    if not re.fullmatch(r"[\w -]+", value, flags=re.UNICODE):
         raise HTTPException(status_code=400, detail="Invalid country id")
     return value
 

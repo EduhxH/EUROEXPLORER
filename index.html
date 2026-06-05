@@ -5194,6 +5194,8 @@ function animateStamper(callback) {
 function openCountryModal(country) {
   currentCountry = country;
   const modal = document.getElementById('country-modal');
+  modal.dataset.countryId = country.name;
+  modal.dataset.countryCode = country.code;
 
   // Set header content
   setFlagImage(document.getElementById('modal-flag'), country.code, 160);
